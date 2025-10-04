@@ -1,4 +1,4 @@
-package com.guilherme.myapplication.ui.theme
+package br.edu.puc.fitlink.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

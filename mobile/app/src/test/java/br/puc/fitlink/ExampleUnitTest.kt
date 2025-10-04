@@ -1,4 +1,4 @@
-package com.guilherme.myapplication
+package br.puc.fitlink
 
 import org.junit.Test
 

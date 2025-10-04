@@ -1,4 +1,4 @@
-package com.guilherme.myapplication
+package br.puc.fitlink
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

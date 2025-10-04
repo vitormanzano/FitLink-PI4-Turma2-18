@@ -1,4 +1,4 @@
-package com.guilherme.myapplication
+package br.edu.puc.fitlink
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.guilherme.myapplication.ui.theme.MyApplicationTheme
+import br.edu.puc.fitlink.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
