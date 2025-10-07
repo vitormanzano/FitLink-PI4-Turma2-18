@@ -9,8 +9,8 @@ mobile/.idea
 **/.idea
 
 # MacOs Files
-DS_Store
-**/DS_Store
+.DS_Store
+**/.DS_Store
 
 
 # BlueJ files
