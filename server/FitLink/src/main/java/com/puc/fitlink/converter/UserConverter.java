@@ -3,6 +3,7 @@ package com.puc.fitlink.converter;
 import com.puc.fitlink.dto.request.UserRequestDto;
 import com.puc.fitlink.models.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -18,5 +19,4 @@ public class UserConverter {
                 .passwordHash(userRequestDto.password())
                 .build();
     }
-
 }
