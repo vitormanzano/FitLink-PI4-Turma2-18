@@ -33,6 +33,7 @@ public class UserService {
         User userExist = userRepository.findByEmail(userRequestDto.email());
         if (userExist != null)
             throw new UserAlreadyExistException("Usuário com esse email já existe!");
+        userRequestDto.password() = passwordEncoder.encode(userRequestDto.password());
 
         User user = saveUser(userConverter.ToUserModel(userRequestDto));
         return userMapper.toUserResponseDto(user);
