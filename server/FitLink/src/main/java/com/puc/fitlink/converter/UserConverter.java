@@ -15,7 +15,7 @@ public class UserConverter {
                 .id(UUID.randomUUID().toString())
                 .name(userRequestDto.name())
                 .email(userRequestDto.email())
-                .password(userRequestDto.password())
+                .passwordHash(userRequestDto.password())
                 .build();
     }
 
