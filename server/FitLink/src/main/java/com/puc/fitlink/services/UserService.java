@@ -39,13 +39,14 @@ public class UserService {
                 userRequestDto.email(),
                 encodedPassword
         );
-
-
+        
         User user = saveUser(userConverter.ToUserModel(userRequestDto));
         return userMapper.toUserResponseDto(user);
     }
 
     public UserResponseDto login(UserLoginDto userLoginDto) throws Exception {
+        notNull(userLoginDto, "Os dados do usuário são obrigatórios");
+
         User user = userRepository.findByEmail(userLoginDto.email());
         if (user == null)
             throw new UserNotFoundException("Usuário com esse email não encontrado!");
