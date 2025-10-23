@@ -25,7 +25,8 @@ import androidx.navigation.NavHostController
 import br.edu.puc.fitlink.R
 
 @Composable
-fun LoginScreen(navController: NavHostController) {
+fun SignUpScreen(navController: NavHostController) {
+    var nome by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
     var senhaVisivel by remember { mutableStateOf(false) }
@@ -93,7 +94,28 @@ fun LoginScreen(navController: NavHostController) {
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Campo de Email com underline
+            // Campo Nome
+            TextField(
+                value = nome,
+                onValueChange = { nome = it },
+                label = { Text("Nome") },
+                leadingIcon = { Icon(imageVector = Icons.Default.Person, contentDescription = null) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Black,
+                    unfocusedIndicatorColor = Color.Gray,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedLabelColor = Color.Black,
+                    unfocusedLabelColor = Color.Gray,
+                    cursorColor = Color.Black
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Campo Email
             TextField(
                 value = email,
                 onValueChange = { email = it },
@@ -110,10 +132,9 @@ fun LoginScreen(navController: NavHostController) {
                 },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors( // <<< CORRETO para M3 FilledTextField
-                    focusedIndicatorColor = Color.Black,     // linha selecionada
-                    unfocusedIndicatorColor = Color.Gray,    // linha normal
-                    // Garante que não há fundo preenchido
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Black,
+                    unfocusedIndicatorColor = Color.Gray,
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedLabelColor = Color.Black,
@@ -124,7 +145,7 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de Senha com underline
+            // Campo Senha
             TextField(
                 value = senha,
                 onValueChange = { senha = it },
@@ -142,7 +163,7 @@ fun LoginScreen(navController: NavHostController) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors( // <<< CORRETO para M3 FilledTextField
+                colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Black,
                     unfocusedIndicatorColor = Color.Gray,
                     focusedContainerColor = Color.Transparent,
@@ -153,28 +174,18 @@ fun LoginScreen(navController: NavHostController) {
                 )
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Esqueci a senha
-            TextButton(
-                onClick = { /* TODO */ },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Text("Esqueci a senha", color = Color.Black, fontSize = 14.sp)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Botão Entrar
             Button(
-                onClick = { /* TODO: login */ },
+                onClick = { /* TODO: signUp */ },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Entre", fontSize = 18.sp, color = Color.Black, fontWeight = FontWeight.Bold)
+                Text("Cadastre-se", fontSize = 18.sp, color = Color.Black, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -205,7 +216,7 @@ fun LoginScreen(navController: NavHostController) {
 
             // Botão Cadastre-se
             OutlinedButton(
-                onClick = { navController.navigate("signUp") },
+                onClick = { navController.navigate("login") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -214,7 +225,7 @@ fun LoginScreen(navController: NavHostController) {
                 colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
             ) {
                 Text(
-                    "Cadastre-se",
+                    "Entre",
                     fontSize = 18.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.Bold
