@@ -89,7 +89,7 @@ fun FirstTimeScreen(navController: NavHostController) {
 
                 // Botão "Cadastre-se"
                 Button(
-                    onClick = {  },
+                    onClick = { navController.navigate("signUp")  },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
