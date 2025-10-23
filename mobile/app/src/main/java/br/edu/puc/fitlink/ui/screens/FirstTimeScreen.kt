@@ -75,7 +75,7 @@ fun FirstTimeScreen(navController: NavHostController) {
 
                 // Botão "Entre"
                 Button(
-                    onClick = { } ,
+                    onClick = { navController.navigate("login") } ,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
