@@ -23,7 +23,7 @@ fun FirstTimeScreen(navController: NavHostController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5C242)), // cor de fundo amarela
+                .background(Color(0xFFFFC107)), // cor de fundo amarela
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -36,7 +36,7 @@ fun FirstTimeScreen(navController: NavHostController) {
                 // Logo placeholder
                 Box(
                     modifier = Modifier
-                        .size(160.dp)
+                        .size(200.dp)
                         .background(Color.Transparent),
                     contentAlignment = Alignment.Center
                 ) {
@@ -45,9 +45,9 @@ fun FirstTimeScreen(navController: NavHostController) {
                         painter = painterResource(id = R.drawable.logo_fitlink),
                         contentDescription = "FitLink logo",
                         modifier = Modifier
-                            .fillMaxWidth(0.8f)
+                            .fillMaxWidth(1f)
                             .aspectRatio(1f),
-                        contentScale = ContentScale.Crop
+                        contentScale = ContentScale.Fit
                     )
                 }
 
@@ -66,7 +66,7 @@ fun FirstTimeScreen(navController: NavHostController) {
                 // Subtítulo
                 Text(
                     text = "Seu treino, mais fácil do que nunca",
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
                     color = Color.Black,
                     textAlign = TextAlign.Center
                 )
