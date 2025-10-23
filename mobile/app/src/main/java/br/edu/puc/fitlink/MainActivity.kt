@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import br.edu.puc.fitlink.ui.screens.FirstTimeScreen
+import br.edu.puc.fitlink.ui.screens.LoginScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,6 +23,9 @@ class MainActivity : ComponentActivity() {
             ) {
                 composable("firstTime") {
                     FirstTimeScreen(navController)
+                }
+                composable("login") {
+                    LoginScreen(navController)
                 }
             }
         }
