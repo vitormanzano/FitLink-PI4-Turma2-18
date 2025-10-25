@@ -1,4 +1,8 @@
+using FitLink.PasswordHasher;
+using FitLink.Repository.User;
+using FitLink.Services.User;
 using FitLink.ServicesExtensions;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +15,11 @@ builder.Services.AddSwaggerGen();
 
 // Adicionando mongo
 builder.Services.AddMongo(builder.Configuration);
+
+// Injeção de dependência
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>(); 
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 var app = builder.Build();
 
