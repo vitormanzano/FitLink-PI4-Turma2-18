@@ -10,15 +10,14 @@ namespace FitLink.Models
         public string Name { get; private set; }
         public string Email { get; private set; }
         public string HashedPassword { get; private set; }
-        public bool IsPersonalTrainer { get; private set; }
+        public bool IsPersonalTrainer { get; private set; } = false;
 
-        public UserModel(string name, string email, string hashedPassword, bool isPersonalTrainer)
+        public UserModel(string name, string email, string hashedPassword)
         {
             Id = Guid.NewGuid();
             Name = name;
             Email = email;
             HashedPassword = hashedPassword;
-            IsPersonalTrainer = isPersonalTrainer;
         }
     }
 }
