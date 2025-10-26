@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using FitLink.Dtos.User;
+using FitLink.Exceptions;
 using FitLink.Services.User;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,7 +27,11 @@ namespace FitLink.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return ex switch
+                {
+                    UserAlreadyExist => Conflict(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
             }
         }
     }
