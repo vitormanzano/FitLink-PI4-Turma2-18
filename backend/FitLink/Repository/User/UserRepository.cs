@@ -18,7 +18,14 @@ namespace FitLink.Repository.User
         {
             await _usersCollection.InsertOneAsync(user);
         }
-        private static void MapClasses()
+
+        public async Task<UserModel> GetUserByEmailAsync(string email)
+        {
+            var filter = Builders<UserModel>.Filter.Eq(u => u.Email, email);
+            return await _usersCollection.Find(filter).FirstOrDefaultAsync();
+        }
+
+        private static void MapClasses() // Como converter a classe UserModel para o formato BSON
         {
             if (!BsonClassMap.IsClassMapRegistered(typeof(UserModel)))
             {
@@ -29,6 +36,5 @@ namespace FitLink.Repository.User
                 });
             }
         }
-
     }
 }
