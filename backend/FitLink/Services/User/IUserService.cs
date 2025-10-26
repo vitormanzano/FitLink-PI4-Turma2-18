@@ -5,5 +5,6 @@ namespace FitLink.Services.User
     public interface IUserService
     {
         Task Register(RegisterUserDto registerUserDto);
+        Task<UserResponseDto> Login(LoginUserDto loginUserDto);
     }
 }

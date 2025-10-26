@@ -1,4 +1,4 @@
-﻿namespace FitLink.Exceptions
+﻿namespace FitLink.Exceptions.User
 {
     public class UserAlreadyExist : Exception
     {

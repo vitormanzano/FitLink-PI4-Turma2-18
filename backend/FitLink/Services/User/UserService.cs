@@ -1,5 +1,5 @@
 ﻿using FitLink.Dtos.User;
-using FitLink.Exceptions;
+using FitLink.Exceptions.User;
 using FitLink.Models;
 using FitLink.PasswordHasher;
 using FitLink.Repository.User;
@@ -28,6 +28,20 @@ namespace FitLink.Services.User
 
             var user = new UserModel(registerUserDto.Name, registerUserDto.Email, hashPassword);
             await _userRepository.InsertDocumentAsync(user);
+        }
+
+        public async Task<UserResponseDto> Login(LoginUserDto loginUserDto)
+        {
+            var user = await _userRepository.GetUserByEmailAsync(loginUserDto.Email);
+            if (user == null)
+                throw new UserNotFound();
+
+            var isPasswordValid = _passwordHasher.Verify(loginUserDto.Password, user.HashedPassword);
+
+            if (!isPasswordValid)
+                throw new InvalidCredentials();
+
+            return new UserResponseDto(user.Id, user.Name, user.Email);
         }
     }
 }
