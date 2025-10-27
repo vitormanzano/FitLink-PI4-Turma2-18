@@ -10,7 +10,9 @@ namespace FitLink.Models
         public string Name { get; private set; }
         public string Email { get; private set; }
         public string HashedPassword { get; private set; }
-        public bool IsPersonalTrainer { get; private set; } = false;
+        public Guid? personalId = null;
+
+        public UserModel() { } // Construtor vazio necessário para o MongoDB
 
         public UserModel(string name, string email, string hashedPassword)
         {
