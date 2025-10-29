@@ -13,7 +13,8 @@ namespace FitLink.Models
         public string Cref { get; private set; }
         public string Phone { get; private set; }
         public string HashedPassword { get; private set; }
-        public bool IsPersonalTrainer { get; private set; } = true;
+
+        public PersonalTrainer() { } // Construtor vazio para o MongoDB
 
         public PersonalTrainer(string name, string email, string cpf, string cref, string phone, string hashedPassword)
         {
