@@ -4,6 +4,6 @@
         string Name,
         string Email,
         string Password,
-        bool IsPersonalTrainer
+        string Phone
     );
 }

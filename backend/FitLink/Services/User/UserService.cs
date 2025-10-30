@@ -26,7 +26,7 @@ namespace FitLink.Services.User
 
             var hashPassword = _passwordHasher.Hash(registerUserDto.Password);
 
-            var user = new UserModel(registerUserDto.Name, registerUserDto.Email, hashPassword);
+            var user = new UserModel(registerUserDto.Name, registerUserDto.Email, hashPassword, registerUserDto.Phone);
             await _userRepository.InsertDocumentAsync(user);
         }
 
@@ -41,7 +41,7 @@ namespace FitLink.Services.User
             if (!isPasswordValid)
                 throw new InvalidCredentials();
 
-            return new UserResponseDto(user.Id, user.Name, user.Email);
+            return new UserResponseDto(user.Id, user.Name, user.Email, user.Phone);
         }
     }
 }
