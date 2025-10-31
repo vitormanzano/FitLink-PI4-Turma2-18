@@ -9,14 +9,14 @@ namespace FitLink.Models
         public Guid Id { get; private set; }
         public string Name { get; private set; }
         public string Email { get; private set; }
+        public string HashedPassword { get; private set; }
         public string Cpf { get; private set; }
         public string Cref { get; private set; }
         public string Phone { get; private set; }
-        public string HashedPassword { get; private set; }
-
+        
         public PersonalTrainer() { } // Construtor vazio para o MongoDB
 
-        public PersonalTrainer(string name, string email, string cpf, string cref, string phone, string hashedPassword)
+        public PersonalTrainer(string name, string email, string hashedPassword, string cpf, string cref, string phone)
         {
             Id = Guid.NewGuid();
             Name = name;
