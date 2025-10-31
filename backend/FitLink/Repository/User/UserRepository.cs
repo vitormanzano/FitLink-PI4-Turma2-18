@@ -1,40 +1,20 @@
 ﻿using FitLink.Models;
-using MongoDB.Bson.Serialization;
+using FitLink.Repository.Core;
 using MongoDB.Driver;
 
 namespace FitLink.Repository.User
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository : BaseRepository<UserModel>, IUserRepository
     {
-        private readonly IMongoCollection<UserModel> _usersCollection;
-
-        public UserRepository(IMongoDatabase database)
+        public UserRepository(IMongoDatabase database) : base(database, "users") // passa pro BaseRepository
         {
-            MapClasses();
-            _usersCollection = database.GetCollection<UserModel>("users"); // Nome da coleção no MongoDB
-        }
-
-        public async Task InsertDocumentAsync(UserModel user)
-        {
-            await _usersCollection.InsertOneAsync(user);
+            
         }
 
         public async Task<UserModel> GetUserByEmailAsync(string email)
         {
             var filter = Builders<UserModel>.Filter.Eq(u => u.Email, email);
-            return await _usersCollection.Find(filter).FirstOrDefaultAsync();
-        }
-
-        private static void MapClasses() // Como converter a classe UserModel para o formato BSON
-        {
-            if (!BsonClassMap.IsClassMapRegistered(typeof(UserModel)))
-            {
-                BsonClassMap.TryRegisterClassMap<UserModel>(cm =>
-                {
-                    cm.AutoMap();
-                    cm.SetIgnoreExtraElements(true);
-                });
-            }
+            return await _collection.Find(filter).FirstOrDefaultAsync();
         }
     }
 }

@@ -3,6 +3,7 @@ using FitLink.Exceptions.User;
 using FitLink.Models;
 using FitLink.PasswordHasher;
 using FitLink.Repository.User;
+using MongoDB.Driver;
 
 namespace FitLink.Services.User
 {
@@ -26,7 +27,7 @@ namespace FitLink.Services.User
 
             var hashPassword = _passwordHasher.Hash(registerUserDto.Password);
 
-            var user = new UserModel(registerUserDto.Name, registerUserDto.Email, hashPassword, registerUserDto.Phone);
+            var user = new UserModel(registerUserDto.Name, registerUserDto.Email, hashPassword, registerUserDto.Phone, registerUserDto.City);
             await _userRepository.InsertDocumentAsync(user);
         }
 
