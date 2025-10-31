@@ -21,10 +21,10 @@ namespace FitLink.Models
             Id = Guid.NewGuid();
             Name = name;
             Email = email;
+            HashedPassword = hashedPassword;
             Cpf = cpf;
             Cref = cref;
             Phone = phone;
-            HashedPassword = hashedPassword;
         }
     }
 }

@@ -2,7 +2,6 @@
 using FitLink.Repository.Core;
 using MongoDB.Driver;
 
-
 namespace FitLink.Repository.User
 {
     public class UserRepository : BaseRepository<UserModel>, IUserRepository
