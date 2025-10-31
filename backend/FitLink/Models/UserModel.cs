@@ -1,4 +1,6 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using Microsoft.AspNetCore.Connections;
+using Microsoft.Extensions.Primitives;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace FitLink.Models
 {
@@ -11,17 +13,19 @@ namespace FitLink.Models
         public string Email { get; private set; }
         public string HashedPassword { get; private set; }
         public string Phone { get; private set; }
+        public string City { get; private set; }
         public Guid? personalId = null;
 
         public UserModel() { } // Construtor vazio necessário para o MongoDB
 
-        public UserModel(string name, string email, string hashedPassword, string phone)
+        public UserModel(string name, string email, string hashedPassword, string phone, string city)
         {
             Id = Guid.NewGuid();
             Name = name;
             Email = email;
             HashedPassword = hashedPassword;
             Phone = phone;
+            City = city;       
         }
     }
 }

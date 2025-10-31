@@ -30,9 +30,10 @@ namespace FitLink.Services.Personal
                 registerPersonalDto.Name,
                 registerPersonalDto.Email,
                 hashPassword,
+                registerPersonalDto.Phone,
+                registerPersonalDto.City,
                 registerPersonalDto.Cpf,
-                registerPersonalDto.Cref,
-                registerPersonalDto.Phone
+                registerPersonalDto.Cref
             );
 
             await _personalRepository.InsertDocumentAsync(personal);

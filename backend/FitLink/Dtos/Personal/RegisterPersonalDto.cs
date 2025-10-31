@@ -5,6 +5,7 @@
         string Email,
         string Password,
         string Phone,
+        string City,
         string Cref,
         string Cpf
     );
