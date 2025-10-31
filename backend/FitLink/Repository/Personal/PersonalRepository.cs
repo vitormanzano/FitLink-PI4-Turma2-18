@@ -15,5 +15,15 @@ namespace FitLink.Repository.Personal
             var filter = Builders<PersonalTrainer>.Filter.Eq(u => u.Email, email);
             return await _collection.Find(filter).FirstOrDefaultAsync();
         }
+
+        public async Task<IEnumerable<PersonalTrainer>> GetPersonalTrainersByCity(string city)
+        {
+            var limitToReturn = 5;
+
+            var filter = Builders<PersonalTrainer>.Filter.Eq(p => p.City, city);
+            return await _collection.Find(filter)
+                .Limit(limitToReturn)
+                .ToListAsync();
+        }
     }
 }

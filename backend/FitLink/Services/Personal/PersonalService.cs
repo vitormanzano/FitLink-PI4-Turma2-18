@@ -38,5 +38,19 @@ namespace FitLink.Services.Personal
 
             await _personalRepository.InsertDocumentAsync(personal);
         }
+
+        public async Task<IEnumerable<ResponsePersonalDto>> GetPersonalTrainersByCity(string city)
+        {
+            var personals = await _personalRepository.GetPersonalTrainersByCity(city);
+
+            var personalResponse = personals.Select(personal => new ResponsePersonalDto(
+                personal.Id,
+                personal.Name,
+                personal.Phone,
+                personal.City
+            ));
+               
+            return personalResponse;
+        }
     }
 }

@@ -33,5 +33,19 @@ namespace FitLink.Controllers
                 };
             }
         }
+
+        [HttpGet("city/{city}")]
+        public async Task<IActionResult> GetPersonalTrainersByCity([FromRoute] string city)
+        {
+            try
+            {
+                var personals = await _personalService.GetPersonalTrainersByCity(city);
+                return Ok(personals);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

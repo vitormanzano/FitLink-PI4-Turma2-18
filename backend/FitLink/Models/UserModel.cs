@@ -14,7 +14,7 @@ namespace FitLink.Models
         public string HashedPassword { get; private set; }
         public string Phone { get; private set; }
         public string City { get; private set; }
-        public Guid? personalId = null;
+        public Guid? personalId { get; private set; }
 
         public UserModel() { } // Construtor vazio necessário para o MongoDB
 
