@@ -3,6 +3,7 @@ using FitLink.Exceptions.User;
 using FitLink.Models;
 using FitLink.PasswordHasher;
 using FitLink.Repository.User;
+using MongoDB.Driver;
 
 namespace FitLink.Services.User
 {

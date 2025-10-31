@@ -1,10 +1,10 @@
 ﻿using FitLink.Models;
+using FitLink.Repository.Core;
 
 namespace FitLink.Repository.User
 {
-    public interface IUserRepository
+    public interface IUserRepository : IBaseRepository<UserModel>
     {
-        Task InsertDocumentAsync(UserModel user);
         Task<UserModel> GetUserByEmailAsync(string email);
     }
 }
