@@ -2,7 +2,7 @@
 
 namespace FitLink.Models
 {
-    public class PersonalTrainer
+    public class PersonalTrainerModel
     {
         [BsonId]
         [BsonRepresentation(MongoDB.Bson.BsonType.String)] // Salva o Guid como string
@@ -15,9 +15,9 @@ namespace FitLink.Models
         public string Cpf { get; private set; }
         public string Cref { get; private set; }
               
-        public PersonalTrainer() { } // Construtor vazio para o MongoDB
+        public PersonalTrainerModel() { } // Construtor vazio para o MongoDB
 
-        public PersonalTrainer(string name, string email, string hashedPassword, string phone, string city, string cpf, string cref)
+        public PersonalTrainerModel(string name, string email, string hashedPassword, string phone, string city, string cpf, string cref)
         {
             Id = Guid.NewGuid();
             Name = name;
