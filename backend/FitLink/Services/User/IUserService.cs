@@ -7,5 +7,6 @@ namespace FitLink.Services.User
         Task Register(RegisterUserDto registerUserDto);
         Task<UserResponseDto> Login(LoginUserDto loginUserDto);
         Task<UserResponseDto> GetUserById(string id);
+        Task<UserResponseDto> Update(string id, UpdateUserDto updateUserDto);
     }
 }

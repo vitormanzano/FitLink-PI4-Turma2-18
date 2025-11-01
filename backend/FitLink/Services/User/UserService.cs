@@ -43,7 +43,12 @@ namespace FitLink.Services.User
             if (!isPasswordValid)
                 throw new InvalidCredentialException("Credenciais inválidas!");
 
-            return new UserResponseDto(user.Id, user.Name, user.Email, user.Phone);
+            return new UserResponseDto(
+                user.Id, 
+                user.Name, 
+                user.Email, 
+                user.Phone, 
+                user.City);
         }
 
         public async Task<UserResponseDto> GetUserById(string id)
@@ -57,10 +62,39 @@ namespace FitLink.Services.User
                 user.Id,
                 user.Name,
                 user.Email,
-                user.Phone
+                user.Phone,
+                user.City
             );
 
             return userResponseDto;
+        }
+
+        public async Task<UserResponseDto> Update(string id, UpdateUserDto updateUserDto)
+        {
+            var user = await _userRepository.GetDocumentByIdAsync(id);
+
+            if (user == null)
+                throw new UserNotFoundException();
+
+            await _userRepository.UpdateDocumentAsync(
+                u => u.Id.ToString() == (id),
+                Builders<UserModel>.Update
+                    .Set(u => u.Name, updateUserDto.Name)
+                    .Set(u => u.Email, updateUserDto.Email)
+                    .Set(u => u.HashedPassword, _passwordHasher.Hash(updateUserDto.Password))
+                    .Set(u => u.Phone, updateUserDto.Phone)
+                    .Set(u => u.City, updateUserDto.City)
+            );
+
+            var userResponse = new UserResponseDto(
+                user.Id,
+                updateUserDto.Name,
+                updateUserDto.Email,
+                updateUserDto.Phone,
+                updateUserDto.City
+            );
+
+            return userResponse;
         }
     }
 }

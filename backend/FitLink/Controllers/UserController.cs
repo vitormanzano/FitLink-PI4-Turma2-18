@@ -72,5 +72,23 @@ namespace FitLink.Controllers
                 };
             }
         }
+
+        [HttpPatch("update/{id}")]
+        public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UpdateUserDto updateUserDto)
+        {
+            try
+            {
+                var updatedUser = await _userService.Update(id, updateUserDto);
+                return Ok(updatedUser);
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
+            }
+        }
     }
 }

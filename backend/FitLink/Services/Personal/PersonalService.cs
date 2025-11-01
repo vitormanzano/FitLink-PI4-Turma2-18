@@ -1,9 +1,11 @@
 ﻿using System.Security.Authentication;
 using FitLink.Dtos.Personal;
+using FitLink.Dtos.User;
 using FitLink.Exceptions.User;
 using FitLink.Models;
 using FitLink.PasswordHasher;
 using FitLink.Repository.Personal;
+using MongoDB.Driver;
 
 namespace FitLink.Services.Personal
 {
@@ -47,6 +49,7 @@ namespace FitLink.Services.Personal
             var personalResponse = personals.Select(personal => new ResponsePersonalDto(
                 personal.Id,
                 personal.Name,
+                personal.Email,
                 personal.Phone,
                 personal.City
             ));
@@ -66,7 +69,12 @@ namespace FitLink.Services.Personal
             if (!passwordMatch)
                 throw new InvalidCredentialException("Credenciais inválidas!");
             
-            return new ResponsePersonalDto(personalExist.Id, personalExist.Name, personalExist.Phone, personalExist.City);
+            return new ResponsePersonalDto(
+                personalExist.Id, 
+                personalExist.Name, 
+                personalExist.Email, 
+                personalExist.Phone, 
+                personalExist.City);
         }
 
         public async Task<ResponsePersonalDto> GetPersonalById(string personalId)
@@ -76,7 +84,41 @@ namespace FitLink.Services.Personal
             if (personalExist == null)
                 throw new UserNotFoundException();
             
-            return new ResponsePersonalDto(personalExist.Id, personalExist.Name, personalExist.Phone, personalExist.City);
+            return new ResponsePersonalDto(
+                personalExist.Id, 
+                personalExist.Name, 
+                personalExist.Email, 
+                personalExist.Phone, 
+                personalExist.City);
+        }
+
+        public async Task<ResponsePersonalDto> Update(string personalId, UpdatePersonalDto updatePersonalDto)
+        {
+            var personal = await _personalRepository.GetDocumentByIdAsync(personalId);
+
+            if (personal == null)
+                throw new UserNotFoundException();
+
+            await _personalRepository.UpdateDocumentAsync(
+                u => u.Id.ToString() == (personalId),
+                Builders<PersonalTrainerModel>.Update
+                    .Set(u => u.Name, updatePersonalDto.Name)
+                    .Set(u => u.Email, updatePersonalDto.Email)
+                    .Set(u => u.HashedPassword, _passwordHasher.Hash(updatePersonalDto.Password))
+                    .Set(u => u.Phone, updatePersonalDto.Phone)
+                    .Set(u => u.City, updatePersonalDto.City)
+            );
+
+            var personalResponse = new ResponsePersonalDto(
+                personal.Id,
+                updatePersonalDto.Name,
+                updatePersonalDto.Email,
+                updatePersonalDto.Phone,
+                updatePersonalDto.City
+            );
+
+            return personalResponse;
         }
     }
+
 }
