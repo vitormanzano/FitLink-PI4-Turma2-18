@@ -1,4 +1,5 @@
-﻿using FitLink.Dtos.User;
+﻿using System.Security.Authentication;
+using FitLink.Dtos.User;
 using FitLink.Exceptions.User;
 using FitLink.Models;
 using FitLink.PasswordHasher;
@@ -23,7 +24,7 @@ namespace FitLink.Services.User
             var userAlreadyExists = await _userRepository.GetUserByEmailAsync(registerUserDto.Email);
 
             if (userAlreadyExists != null)
-                throw new UserAlreadyExist();
+                throw new UserAlreadyExistException();
 
             var hashPassword = _passwordHasher.Hash(registerUserDto.Password);
 
@@ -35,12 +36,12 @@ namespace FitLink.Services.User
         {
             var user = await _userRepository.GetUserByEmailAsync(loginUserDto.Email);
             if (user == null)
-                throw new UserNotFound();
+                throw new UserNotFoundException();
 
             var isPasswordValid = _passwordHasher.Verify(loginUserDto.Password, user.HashedPassword);
 
             if (!isPasswordValid)
-                throw new InvalidCredentials();
+                throw new InvalidCredentialException("Credenciais inválidas!");
 
             return new UserResponseDto(user.Id, user.Name, user.Email, user.Phone);
         }

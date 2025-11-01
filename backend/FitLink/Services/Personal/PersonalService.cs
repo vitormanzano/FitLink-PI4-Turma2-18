@@ -1,4 +1,5 @@
-﻿using FitLink.Dtos.Personal;
+﻿using System.Security.Authentication;
+using FitLink.Dtos.Personal;
 using FitLink.Exceptions.User;
 using FitLink.Models;
 using FitLink.PasswordHasher;
@@ -22,11 +23,11 @@ namespace FitLink.Services.Personal
             var personalExist = await _personalRepository.GetPersonalByEmailAsync(registerPersonalDto.Email);
 
             if (personalExist != null)
-                throw new UserAlreadyExist();
+                throw new UserAlreadyExistException();
 
             var hashPassword = _passwordHasher.Hash(registerPersonalDto.Password);
 
-            var personal = new PersonalTrainer(
+            var personal = new PersonalTrainerModel(
                 registerPersonalDto.Name,
                 registerPersonalDto.Email,
                 hashPassword,
@@ -51,6 +52,21 @@ namespace FitLink.Services.Personal
             ));
                
             return personalResponse;
+        }
+
+        public async Task<ResponsePersonalDto> Login(LoginPersonalDto loginPersonalDto)
+        {
+            var personalExist = await _personalRepository.GetPersonalByEmailAsync(loginPersonalDto.Email);
+            
+            if (personalExist == null)
+                throw new UserNotFoundException();
+            
+            var passwordMatch = _passwordHasher.Verify(loginPersonalDto.Password, personalExist.HashedPassword);
+            
+            if (!passwordMatch)
+                throw new InvalidCredentialException("Credenciais inválidas!");
+            
+            return new ResponsePersonalDto(personalExist.Id, personalExist.Name, personalExist.Phone, personalExist.City);
         }
     }
 }

@@ -4,23 +4,23 @@ using MongoDB.Driver;
 
 namespace FitLink.Repository.Personal
 {
-    public class PersonalRepository : BaseRepository<PersonalTrainer>, IPersonalRepository
+    public class PersonalRepository : BaseRepository<PersonalTrainerModel>, IPersonalRepository
     {
         public PersonalRepository(IMongoDatabase database) : base(database, "personalTrainers")
         {
         }
 
-        public async Task<PersonalTrainer> GetPersonalByEmailAsync(string email)
+        public async Task<PersonalTrainerModel> GetPersonalByEmailAsync(string email)
         {
-            var filter = Builders<PersonalTrainer>.Filter.Eq(u => u.Email, email);
+            var filter = Builders<PersonalTrainerModel>.Filter.Eq(u => u.Email, email);
             return await _collection.Find(filter).FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<PersonalTrainer>> GetPersonalTrainersByCity(string city)
+        public async Task<IEnumerable<PersonalTrainerModel>> GetPersonalTrainersByCity(string city)
         {
             var limitToReturn = 5;
 
-            var filter = Builders<PersonalTrainer>.Filter.Eq(p => p.City, city);
+            var filter = Builders<PersonalTrainerModel>.Filter.Eq(p => p.City, city);
             return await _collection.Find(filter)
                 .Limit(limitToReturn)
                 .ToListAsync();

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security.Authentication;
+using System.Threading.Tasks;
 using FitLink.Dtos.User;
 using FitLink.Exceptions.User;
 using FitLink.Services.User;
@@ -29,7 +30,7 @@ namespace FitLink.Controllers
             {
                 return ex switch
                 {
-                    UserAlreadyExist => Conflict(ex.Message),
+                    UserAlreadyExistException => Conflict(ex.Message),
                     _ => BadRequest(ex.Message)
                 };
             }
@@ -47,8 +48,8 @@ namespace FitLink.Controllers
             {
                 return ex switch
                 {
-                    UserNotFound => NotFound(ex.Message),
-                    InvalidCredentials => Unauthorized(ex.Message),
+                    UserNotFoundException => NotFound(ex.Message),
+                    InvalidCredentialException => Unauthorized(ex.Message),
                     _ => BadRequest(ex.Message)
                 };
             }

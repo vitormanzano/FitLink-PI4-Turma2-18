@@ -1,4 +1,5 @@
-﻿using FitLink.Dtos.Personal;
+﻿using System.Security.Authentication;
+using FitLink.Dtos.Personal;
 using FitLink.Exceptions.User;
 using FitLink.Services.Personal;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +29,7 @@ namespace FitLink.Controllers
             {
                 return ex switch
                 {
-                    UserAlreadyExist => Conflict(ex.Message),
+                    UserAlreadyExistException => Conflict(ex.Message),
                     _ => BadRequest(ex.Message)
                 };
             }
@@ -45,6 +46,25 @@ namespace FitLink.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginPersonalDto personal)
+        {
+            try
+            {
+                var personalResponse = await _personalService.Login(personal);
+                return Ok(personalResponse);
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    InvalidCredentialException => Unauthorized(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
             }
         }
     }
