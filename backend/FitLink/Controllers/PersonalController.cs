@@ -84,7 +84,24 @@ namespace FitLink.Controllers
                     _ => BadRequest(ex.Message)
                 };
             }
+        }
 
+        [HttpPatch("update/{personalId}")]
+        public async Task<IActionResult> Update([FromRoute] string personalId, [FromBody] UpdatePersonalDto updatePersonalDto)
+        {
+            try
+            {
+                var updatedPersonal = await _personalService.Update(personalId, updatePersonalDto);
+                return Ok(updatedPersonal);
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
+            }
         }
     }
 }
