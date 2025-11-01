@@ -15,7 +15,7 @@ namespace FitLink.Repository.Core
             _collection = database.GetCollection<T>(collectionName);
         }
 
-        public async Task<T> GetDocumentByIdAsync(Guid id)
+        public async Task<T> GetDocumentByIdAsync(string id)
         {
             var filter = Builders<T>.Filter.Eq("_id", id);
             var result = await _collection.Find(filter).FirstOrDefaultAsync();

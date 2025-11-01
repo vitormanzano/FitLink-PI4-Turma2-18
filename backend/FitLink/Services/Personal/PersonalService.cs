@@ -68,5 +68,15 @@ namespace FitLink.Services.Personal
             
             return new ResponsePersonalDto(personalExist.Id, personalExist.Name, personalExist.Phone, personalExist.City);
         }
+
+        public async Task<ResponsePersonalDto> GetPersonalById(string personalId)
+        {
+            var personalExist = await _personalRepository.GetDocumentByIdAsync(personalId);
+            
+            if (personalExist == null)
+                throw new UserNotFoundException();
+            
+            return new ResponsePersonalDto(personalExist.Id, personalExist.Name, personalExist.Phone, personalExist.City);
+        }
     }
 }
