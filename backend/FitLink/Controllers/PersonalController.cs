@@ -67,5 +67,24 @@ namespace FitLink.Controllers
                 };
             }
         }
+
+        [HttpGet("getById/{personalId}")]
+        public async Task<IActionResult> GetPersonalById([FromRoute] string personalId)
+        {
+            try
+            {
+                var personalResponse = await _personalService.GetPersonalById(personalId);
+                return Ok(personalResponse);
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
+            }
+
+        }
     }
 }

@@ -7,5 +7,6 @@ namespace FitLink.Services.Personal
         Task Register(RegisterPersonalDto registerPersonalDto);
         Task<IEnumerable<ResponsePersonalDto>> GetPersonalTrainersByCity(string city);
         Task<ResponsePersonalDto> Login(LoginPersonalDto loginPersonalDto);
+        Task<ResponsePersonalDto> GetPersonalById(string personalId);
     }
 }

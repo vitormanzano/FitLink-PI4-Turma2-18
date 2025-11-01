@@ -45,5 +45,22 @@ namespace FitLink.Services.User
 
             return new UserResponseDto(user.Id, user.Name, user.Email, user.Phone);
         }
+
+        public async Task<UserResponseDto> GetUserById(string id)
+        {
+            var user = await _userRepository.GetDocumentByIdAsync(id);
+
+            if (user == null)
+                throw new UserNotFoundException();
+
+            var userResponseDto = new UserResponseDto(
+                user.Id,
+                user.Name,
+                user.Email,
+                user.Phone
+            );
+
+            return userResponseDto;
+        }
     }
 }
