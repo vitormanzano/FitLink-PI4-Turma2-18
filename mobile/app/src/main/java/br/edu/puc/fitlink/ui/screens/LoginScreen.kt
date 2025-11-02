@@ -165,6 +165,41 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            var isProfessor by remember { mutableStateOf(false) }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Aluno",
+                    fontSize = 18.sp,
+                    color = if (!isProfessor) Color.Black else Color.Gray,
+                    fontWeight = if (!isProfessor) FontWeight.Bold else FontWeight.Normal
+                )
+
+                Switch(
+                    checked = isProfessor,
+                    onCheckedChange = { isProfessor = it },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        uncheckedThumbColor = Color.White,
+                        checkedTrackColor = Color.Black,
+                        uncheckedTrackColor = Color.Black
+                    )
+                )
+
+                Text(
+                    text = "Professor",
+                    fontSize = 18.sp,
+                    color = if (isProfessor) Color.Black else Color.Gray,
+                    fontWeight = if (isProfessor) FontWeight.Bold else FontWeight.Normal
+                )
+            }
+
             // Botão Entrar
             Button(
                 onClick = { /* TODO: login */ },
