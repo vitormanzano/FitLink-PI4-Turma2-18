@@ -4,8 +4,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -27,21 +29,28 @@ import br.edu.puc.fitlink.R
 @Composable
 fun SignUpScreen(navController: NavHostController) {
     var nome by remember { mutableStateOf("") }
+    var telefone by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var cref by remember { mutableStateOf("") }
+    var cpf by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
     var senhaVisivel by remember { mutableStateOf(false) }
+    var isProfessor by remember { mutableStateOf(false) }
+
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .verticalScroll(scrollState) // ✅ rolagem ativada
     ) {
-        // Topo amarelo com botão de voltar
+        // ======= Topo amarelo =======
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFFFFC107))
-                .padding(top = 22.dp, bottom = 0.dp)
+                .padding(top = 22.dp)
         ) {
             IconButton(
                 onClick = { navController.popBackStack() },
@@ -55,7 +64,7 @@ fun SignUpScreen(navController: NavHostController) {
             }
         }
 
-        // Logo e título
+        // ======= Logo =======
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -63,9 +72,7 @@ fun SignUpScreen(navController: NavHostController) {
                 .padding(top = 40.dp, bottom = 48.dp)
         ) {
             Column(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(top = 16.dp),
+                modifier = Modifier.align(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Image(
@@ -85,72 +92,113 @@ fun SignUpScreen(navController: NavHostController) {
             }
         }
 
-        // Corpo branco
+        // ======= Corpo branco (scrollável) =======
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Campo Nome
-            TextField(
-                value = nome,
-                onValueChange = { nome = it },
-                label = { Text("Nome") },
-                leadingIcon = { Icon(imageVector = Icons.Default.Person, contentDescription = null) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Black,
-                    unfocusedIndicatorColor = Color.Gray,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedLabelColor = Color.Black,
-                    unfocusedLabelColor = Color.Gray,
-                    cursorColor = Color.Black
-                )
-            )
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo Email
-            TextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                leadingIcon = { Icon(imageVector = Icons.Default.Email, contentDescription = null) },
-                trailingIcon = {
-                    if (email.isNotEmpty()) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Check",
-                            tint = Color.Black
-                        )
-                    }
-                },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Black,
-                    unfocusedIndicatorColor = Color.Gray,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedLabelColor = Color.Black,
-                    unfocusedLabelColor = Color.Gray,
-                    cursorColor = Color.Black
+            // ======= Campos dinâmicos =======
+            if (!isProfessor) {
+                // -------- CADASTRO DE ALUNO --------
+                TextField(
+                    value = nome,
+                    onValueChange = { nome = it },
+                    label = { Text("Nome") },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = underlineColors()
                 )
-            )
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
+                TextField(
+                    value = telefone,
+                    onValueChange = { telefone = it },
+                    label = { Text("Telefone") },
+                    leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = underlineColors()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo Senha
+                TextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                    trailingIcon = {
+                        if (email.isNotEmpty()) Icon(Icons.Default.Check, contentDescription = null, tint = Color.Black)
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = underlineColors()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            } else {
+                // -------- CADASTRO DE PROFESSOR --------
+                TextField(
+                    value = nome,
+                    onValueChange = { nome = it },
+                    label = { Text("Nome") },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = underlineColors()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                    trailingIcon = {
+                        if (email.isNotEmpty()) Icon(Icons.Default.Check, contentDescription = null, tint = Color.Black)
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = underlineColors()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    value = cref,
+                    onValueChange = { cref = it },
+                    label = { Text("Cref") },
+                    leadingIcon = { Icon(Icons.Default.Badge, contentDescription = null) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = underlineColors()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    value = cpf,
+                    onValueChange = { cpf = it },
+                    label = { Text("CPF") },
+                    leadingIcon = { Icon(Icons.Default.CreditCard, contentDescription = null) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = underlineColors()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // ======= Campo de senha =======
             TextField(
                 value = senha,
                 onValueChange = { senha = it },
                 label = { Text("Senha") },
-                leadingIcon = { Icon(imageVector = Icons.Default.Lock, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                 trailingIcon = {
                     IconButton(onClick = { senhaVisivel = !senhaVisivel }) {
                         Icon(
@@ -163,20 +211,12 @@ fun SignUpScreen(navController: NavHostController) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Black,
-                    unfocusedIndicatorColor = Color.Gray,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedLabelColor = Color.Black,
-                    unfocusedLabelColor = Color.Gray,
-                    cursorColor = Color.Black
-                )
+                colors = underlineColors()
             )
 
             Spacer(modifier = Modifier.height(24.dp))
-            var isProfessor by remember { mutableStateOf(false) }
 
+            // ======= Switch Aluno/Professor =======
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -210,9 +250,11 @@ fun SignUpScreen(navController: NavHostController) {
                 )
             }
 
-            // Botão Cadastro
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ======= Botão Cadastrar =======
             Button(
-                onClick = { /* TODO: signUp */ },
+                onClick = { /* TODO: cadastro */ },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -224,31 +266,16 @@ fun SignUpScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Separador
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Divider(
-                    color = Color.Black,
-                    thickness = 1.dp,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    "  ou  ",
-                    fontSize = 14.sp,
-                    color = Color.Black,
-                    textAlign = TextAlign.Center
-                )
-                Divider(
-                    color = Color.Black,
-                    thickness = 1.dp,
-                    modifier = Modifier.weight(1f)
-                )
+            // ======= Separador =======
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.weight(1f))
+                Text("  ou  ", fontSize = 14.sp, color = Color.Black)
+                Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.weight(1f))
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botão Cadastre-se
+            // ======= Botão Entrar =======
             OutlinedButton(
                 onClick = { navController.navigate("login") },
                 modifier = Modifier
@@ -258,13 +285,21 @@ fun SignUpScreen(navController: NavHostController) {
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
             ) {
-                Text(
-                    "Entre",
-                    fontSize = 18.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold
-                )
+                Text("Entre", fontSize = 18.sp, color = Color.Black, fontWeight = FontWeight.Bold)
             }
+
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
+
+@Composable
+private fun underlineColors() = TextFieldDefaults.colors(
+    focusedIndicatorColor = Color.Black,
+    unfocusedIndicatorColor = Color.Gray,
+    focusedContainerColor = Color.Transparent,
+    unfocusedContainerColor = Color.Transparent,
+    focusedLabelColor = Color.Black,
+    unfocusedLabelColor = Color.Gray,
+    cursorColor = Color.Black
+)
