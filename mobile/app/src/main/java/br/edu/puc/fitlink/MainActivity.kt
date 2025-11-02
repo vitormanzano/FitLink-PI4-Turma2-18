@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import br.edu.puc.fitlink.ui.screens.ChooseUseScreen
 import br.edu.puc.fitlink.ui.screens.FirstTimeScreen
 import br.edu.puc.fitlink.ui.screens.LoginScreen
 import br.edu.puc.fitlink.ui.screens.SignUpScreen
@@ -25,6 +26,9 @@ class MainActivity : ComponentActivity() {
             ) {
                 composable("firstTime") {
                     FirstTimeScreen(navController)
+                }
+                composable("choose"){
+                    ChooseUseScreen(navController)
                 }
                 composable("login") {
                     LoginScreen(navController)
