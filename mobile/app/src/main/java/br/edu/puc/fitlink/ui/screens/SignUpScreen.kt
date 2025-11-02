@@ -254,7 +254,7 @@ fun SignUpScreen(navController: NavHostController) {
 
             // ======= Botão Cadastrar =======
             Button(
-                onClick = { /* TODO: cadastro */ },
+                onClick = { navController.navigate("home") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
