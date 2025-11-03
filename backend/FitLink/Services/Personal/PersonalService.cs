@@ -1,6 +1,5 @@
 ﻿using System.Security.Authentication;
 using FitLink.Dtos.Personal;
-using FitLink.Dtos.User;
 using FitLink.Exceptions.User;
 using FitLink.Models;
 using FitLink.PasswordHasher;
@@ -100,13 +99,13 @@ namespace FitLink.Services.Personal
                 throw new UserNotFoundException();
 
             await _personalRepository.UpdateDocumentAsync(
-                u => u.Id.ToString() == (personalId),
+                p => p.Id.ToString() == (personalId),
                 Builders<PersonalTrainerModel>.Update
-                    .Set(u => u.Name, updatePersonalDto.Name)
-                    .Set(u => u.Email, updatePersonalDto.Email)
-                    .Set(u => u.HashedPassword, _passwordHasher.Hash(updatePersonalDto.Password))
-                    .Set(u => u.Phone, updatePersonalDto.Phone)
-                    .Set(u => u.City, updatePersonalDto.City)
+                    .Set(p => p.Name, updatePersonalDto.Name)
+                    .Set(p => p.Email, updatePersonalDto.Email)
+                    .Set(p => p.HashedPassword, _passwordHasher.Hash(updatePersonalDto.Password))
+                    .Set(p => p.Phone, updatePersonalDto.Phone)
+                    .Set(p => p.City, updatePersonalDto.City)
             );
 
             var personalResponse = new ResponsePersonalDto(
@@ -119,6 +118,15 @@ namespace FitLink.Services.Personal
 
             return personalResponse;
         }
-    }
 
+        public async Task Delete(string personalId)
+        {
+            var personal = _personalRepository.GetDocumentByIdAsync(personalId);
+
+            if (personal == null)
+                throw new UserNotFoundException();
+
+            await _personalRepository.DeleteDocumentAsync(p => p.Id.ToString() == personalId);
+        }
+    }
 }

@@ -96,5 +96,15 @@ namespace FitLink.Services.User
 
             return userResponse;
         }
+
+        public async Task Delete(string id)
+        {
+            var user = _userRepository.GetDocumentByIdAsync(id);
+
+            if (user == null)
+                throw new UserNotFoundException();
+
+            await _userRepository.DeleteDocumentAsync(p => p.Id.ToString() == id);
+        }
     }
 }
