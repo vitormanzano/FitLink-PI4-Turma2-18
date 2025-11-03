@@ -103,5 +103,23 @@ namespace FitLink.Controllers
                 };
             }
         }
+
+        [HttpDelete("delete/{id}")]
+        public async Task<IActionResult> Delete([FromRoute] string id)
+        {
+            try
+            {
+                await _personalService.Delete(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
+            }
+        }
     }
 }
