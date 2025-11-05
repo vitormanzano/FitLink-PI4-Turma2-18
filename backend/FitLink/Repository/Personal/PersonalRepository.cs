@@ -16,6 +16,7 @@ namespace FitLink.Repository.Personal
             return await _collection.Find(filter).FirstOrDefaultAsync();
         }
 
+
         public async Task<IEnumerable<PersonalTrainerModel>> GetPersonalTrainersByCity(string city)
         {
             var limitToReturn = 5;
@@ -24,6 +25,18 @@ namespace FitLink.Repository.Personal
             return await _collection.Find(filter)
                 .Limit(limitToReturn)
                 .ToListAsync();
+        }
+
+        public Task<PersonalTrainerModel> GetPersonalTrainerByCpf(string cpf)
+        {
+            var filter = Builders<PersonalTrainerModel>.Filter.Eq(p => p.Cpf, cpf);
+            return _collection.Find(filter).FirstOrDefaultAsync();
+        }
+
+        public Task<PersonalTrainerModel> GetPersonalTrainerByCref(string cref)
+        {
+            var filter = Builders<PersonalTrainerModel>.Filter.Eq(p => p.Cref, cref);
+            return _collection.Find(filter).FirstOrDefaultAsync();
         }
     }
 }
