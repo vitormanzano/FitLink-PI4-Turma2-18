@@ -1,4 +1,5 @@
-﻿using FitLink.Models;
+﻿using System.Linq.Expressions;
+using FitLink.Models;
 using FitLink.Repository.Core;
 using MongoDB.Driver;
 
@@ -25,6 +26,11 @@ namespace FitLink.Repository.User
             return await _collection.Find(filter)
                 .Limit(limitToReturn)
                 .ToListAsync();
+        }
+
+        public async Task LinkUserToPersonal(Expression<Func<UserModel, bool>> filterExpression, UpdateDefinition<UserModel> update)
+        {
+            await _collection.UpdateOneAsync(filterExpression, update);
         }
     }
 }

@@ -122,5 +122,23 @@ namespace FitLink.Controllers
                 };
             }
         }
+
+        [HttpPatch("linkToPersonal/{userId}/{personalTrainerId}")]
+        public async Task<IActionResult> LinkUserToPersonal([FromRoute] string userId, [FromRoute] string personalTrainerId)
+        {
+            try
+            {
+                await _userService.LinkUserToPersonal(userId, personalTrainerId);
+                return Ok("Usuário vinculado ao personal trainer com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
+            }
+        }
     }
 }

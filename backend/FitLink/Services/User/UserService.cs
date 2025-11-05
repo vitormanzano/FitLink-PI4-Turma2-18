@@ -3,6 +3,7 @@ using FitLink.Dtos.User;
 using FitLink.Exceptions.User;
 using FitLink.Models;
 using FitLink.PasswordHasher;
+using FitLink.Repository.Personal;
 using FitLink.Repository.User;
 using MongoDB.Driver;
 
@@ -11,11 +12,13 @@ namespace FitLink.Services.User
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IPersonalRepository _personalRepository;
         private readonly IPasswordHasher _passwordHasher;
 
-        public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher)
+        public UserService(IUserRepository userRepository, IPersonalRepository personalRepository, IPasswordHasher passwordHasher)
         {
             _userRepository = userRepository;
+            _personalRepository = personalRepository;
             _passwordHasher = passwordHasher;
         }
 
@@ -124,5 +127,23 @@ namespace FitLink.Services.User
 
             await _userRepository.DeleteDocumentAsync(p => p.Id.ToString() == id);
         }
+
+        public async Task LinkUserToPersonal(string userId, string personalTrainerId)
+        {
+            var user = await _userRepository.GetDocumentByIdAsync(userId);
+
+            if (user is null)
+                throw new UserNotFoundException();
+
+            var personal = await _personalRepository.GetDocumentByIdAsync(personalTrainerId);
+
+            if (personal is null)
+                throw new UserNotFoundException("Personal não encontrado!");
+
+            await _userRepository.UpdateDocumentAsync(
+                u => u.Id.ToString() == (userId),
+                Builders<UserModel>.Update.Set(u => u.PersonalId, personalTrainerId));
+        }
+
     }
 }
