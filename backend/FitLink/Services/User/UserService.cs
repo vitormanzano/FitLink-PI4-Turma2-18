@@ -69,6 +69,24 @@ namespace FitLink.Services.User
             return userResponseDto;
         }
 
+        public async Task<IEnumerable<UserResponseDto>> GetUsersByCity(string city)
+        {
+            var users = await _userRepository.GetUsersByCity(city);
+
+            if (users.Count() == 0)
+                throw new UserNotFoundException();
+
+            var usersResponseDto = users.Select(user => new UserResponseDto(
+                user.Id,
+                user.Name,
+                user.Email,
+                user.Phone,
+                user.City
+            ));
+
+            return usersResponseDto;
+        }
+
         public async Task<UserResponseDto> Update(string id, UpdateUserDto updateUserDto)
         {
             var user = await _userRepository.GetDocumentByIdAsync(id);

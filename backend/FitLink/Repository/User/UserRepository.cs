@@ -16,5 +16,15 @@ namespace FitLink.Repository.User
             var filter = Builders<UserModel>.Filter.Eq(u => u.Email, email);
             return await _collection.Find(filter).FirstOrDefaultAsync();
         }
+
+        public async Task<IEnumerable<UserModel>> GetUsersByCity(string city)
+        {
+            var limitToReturn = 5;
+
+            var filter = Builders<UserModel>.Filter.Eq(p => p.City, city);
+            return await _collection.Find(filter)
+                .Limit(limitToReturn)
+                .ToListAsync();
+        }
     }
 }
