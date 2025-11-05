@@ -10,5 +10,6 @@ namespace FitLink.Services.User
         Task<IEnumerable<UserResponseDto>> GetUsersByCity(string city);
         Task<UserResponseDto> Update(string id, UpdateUserDto updateUserDto);
         Task Delete(string id);
+        Task LinkUserToPersonal(string userId, string personalTrainerId);
     }
 }
