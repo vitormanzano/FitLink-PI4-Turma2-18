@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import validacoes.ValidadorEmail;
 
 public class Servidor {
     public static String PORTA_PADRAO = "3000";
@@ -18,7 +19,7 @@ public class Servidor {
         ArrayList<Parceiro> usuarios = new ArrayList<>();
 
         AceitadoraDeConexao aceitadoraDeConexao = null;
-        
+
         try {
             aceitadoraDeConexao = new AceitadoraDeConexao(porta, usuarios);
             aceitadoraDeConexao.start();
@@ -29,19 +30,25 @@ public class Servidor {
         }
 
         for (;;) {
-            System.out.println("O servidor está ativo! para desativa-lo, ");
-            System.out.println("Use o comando \"desativar\" \n");
-            System.out.println("> ");
+            System.out.println("\nO servidor está ativo! Para desativá-lo, use o comando \"desativar\".");
+            System.out.println("Comando adicional: \"email <endereco>\" para validar e-mails.");
+            System.out.print("> ");
 
             String comando = null;
             try {
                 comando = Teclado.getUmString();
             }
-            catch (Exception erro) { }
+            catch (Exception erro) {
+                System.err.println("Erro ao ler comando.");
+                continue;
+            }
 
-            if (comando.toLowerCase().equals("desativar")) {
+            if (comando == null) continue;
+            comando = comando.trim();
+
+            if (comando.equalsIgnoreCase("desativar")) {
                 synchronized(usuarios) {
-                    ComunicadoDeDesligamento comunicadoDeDesligamento = new ComunicadoDeDesligamento();
+                    ComunicadoDeDesligamento comunicadoDeDesligamento = new ComunicadoDeDesligamento("Servidor encerrado pelo operador.");
 
                     for (Parceiro usuario : usuarios) {
                         try {
@@ -51,12 +58,27 @@ public class Servidor {
                         catch (Exception erro) { }
                     }
                 }
-                
+
                 System.out.println("O servidor foi desativado!\n");
                 System.exit(0);
             }
+
+            else if (comando.toLowerCase().startsWith("email ")) {
+                String email = comando.substring(6).trim();
+                if (email.isEmpty()) {
+                    System.err.println("Uso: email <endereco>");
+                    continue;
+                }
+
+                boolean valido = ValidadorEmail.validar(email);
+                if (valido)
+                    System.out.println("Email válido!");
+                else
+                    System.out.println("Email inválido!");
+            }
+
             else {
-                System.err.println("Comando inválido");
+                System.err.println("Comando inválido. Use: desativar | email <endereco>");
             }
         }
     }
