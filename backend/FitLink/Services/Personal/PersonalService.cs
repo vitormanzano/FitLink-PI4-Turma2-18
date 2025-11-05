@@ -26,6 +26,16 @@ namespace FitLink.Services.Personal
             if (personalExist != null)
                 throw new UserAlreadyExistException();
 
+            personalExist = await _personalRepository.GetPersonalTrainerByCpf(registerPersonalDto.Cpf);
+
+            if (personalExist != null)
+                throw new UserAlreadyExistException("CPF já cadastrado!");
+
+            personalExist = await _personalRepository.GetPersonalTrainerByCref(registerPersonalDto.Cref);
+
+            if (personalExist != null)
+                throw new UserAlreadyExistException("CREF já cadastrado!");
+
             var hashPassword = _passwordHasher.Hash(registerPersonalDto.Password);
 
             var personal = new PersonalTrainerModel(

@@ -7,5 +7,7 @@ namespace FitLink.Repository.Personal
     {
         Task<PersonalTrainerModel> GetPersonalByEmailAsync(string email);
         Task<IEnumerable<PersonalTrainerModel>> GetPersonalTrainersByCity(string city);
+        Task<PersonalTrainerModel> GetPersonalTrainerByCpf(string cpf);
+        Task<PersonalTrainerModel> GetPersonalTrainerByCref(string cref);
     }
 }
