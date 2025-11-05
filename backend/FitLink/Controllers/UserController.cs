@@ -73,6 +73,20 @@ namespace FitLink.Controllers
             }
         }
 
+        [HttpGet("GetByCity/{city}")]
+        public async Task<IActionResult> GetUsersByCity([FromRoute] string city)
+        {
+            try
+            {
+                var usersInCity = await _userService.GetUsersByCity(city);
+                return Ok(usersInCity);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPatch("update/{id}")]
         public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UpdateUserDto updateUserDto)
         {
