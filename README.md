@@ -73,16 +73,31 @@ Arquitetura Resumida:
 
 EndPoints:
 
-| Método | Endpoint          | Descrição                               |
-| ------ | ----------------- | --------------------------------------- |
-| `POST` | `/login`          | Realiza login do usuário                |
-| `POST` | `/cadastro/aluno` | Cadastra um novo aluno                  |
-| `GET`  | `/personais`      | Retorna lista de personais cadastrados  |
-| `POST` | `/vinculo`        | Solicita vínculo entre aluno e personal |
-| `GET`  | `/treino/:id`     | Retorna o treino atual do aluno         |
-|        |                   |                                         |
-|        |                   |                                         |
-|        |                   |                                         |
+### Aluno 
+Client significa aluno
+
+| Método   | Endpoint                                              | Descrição                                   |
+| ------   | ----------------------------------------------------- | --------------------------------------------|
+| `POST `  | `/Client/register`                                    | Realiza login do aluno                      |
+| `POST`   | `/Client/login`                                       | Cadastra um novo aluno                      |
+| `GET`    | `/Client/getById/{id}`                                | Busca um aluno por ID                       |
+| `GET`    | `/Client/getByCity/{city}`                            | Busca alunos por cidade                   | 
+| `PATCH`  | `/Client/update/{id}`                                 | Atualiza os dados de um aluno               |
+| `DELETE` | `/Client/delete/{id}`                                 | Deleta o registro de um aluno               |
+| `PATCH`  | `/Client/linkToPersonal/{userId}/{personalTrainerId}` | Faz o vínculo entre um aluno e um personal  |                                         
+|          |                                                       |                                             |
+
+### Personal 
+
+| Método   | Endpoint                                                | Descrição                                   |
+| ------   | --------------------------------------------------------| --------------------------------------------|
+| `POST `  | `/Personal/register`                                    | Realiza login do personal                   |
+| `POST`   | `/Personal/login`                                       | Cadastra um novo personal                   |
+| `GET`    | `/Personal/getById/{id}`                                | Busca um personal por ID                    |
+| `GET`    | `/Personal/getByCity/{city}`                            | Busca personais por cidade                  | 
+| `PATCH`  | `/Personal/update/{id}`                                 | Atualiza os dados de um personal            |
+| `DELETE` | `/Personal/delete/{id}`                                 | Deleta o registro de um personal            |
+|          |                                                         |                                             |
 
 
 Intruções de Execução:
