@@ -2,30 +2,53 @@
 Repositório para desenvolvimento do projeto FitLink. 
 
 REQUISITOS FUNCIONAIS:
+<br>
 RF001-Cadastro de Aluno
+<br>
 RF002-Cadastro de Personal
+<br>
 RF003-Login de usuário
+<br>
 RF004-Buscar personal
+<br>
 RF005-Solicitar vínculo de serviço com personal
+<br>
 RF006-Consultar treino atua
+<br>
 RF007-Visualizar e editar perfil
+<br>
 RF008-Finalizar vínculo de serviço com personal/aluno
+<br>
 RF009-Home Personal / Dashboard alunos
+<br>
 RF010-Visualizar informações dos treinos
+<br>
 RF011-Visualizar perfil do aluno
+<br>
 RF012-Gerenciar treinos (CRUD)
+<br>
 RF013-Adicionar exercício
+<br>
 RF014-Remover exercício
+<br>
 RF015-Logout
 
 REQUISITOS DESEJÁVEIS:
+<br>
 RF001-Recuperação de senha
+<br>
 RF002-Complemento de cadastro - Anamnese e avaliação física
+<br>
 RF003-Buscar personal - filtro de tags
+<br>
 RF004-Chat entre aluno e personal
+<br>
 RF005-Registrar treino concluído
+<br>
 RF006-Consultar histórico de treino
+<br>
 RF007-Visualizar informações dos treinos registrados
+<br>
 RF008-Excluir conta
 
 Servidor Java:
