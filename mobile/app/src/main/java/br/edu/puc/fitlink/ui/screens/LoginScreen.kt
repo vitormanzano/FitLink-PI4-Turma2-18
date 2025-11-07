@@ -23,12 +23,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import br.edu.puc.fitlink.R
+import br.edu.puc.fitlink.validations.ClienteViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
     var senhaVisivel by remember { mutableStateOf(false) }
+    var isProfessor by remember { mutableStateOf(false) }
+
+    // novo estado para exibir mensagem de validação
+    var mostrarDialog by remember { mutableStateOf(false) }
+    var mensagemDialog by remember { mutableStateOf("") }
+
+    val viewModel = remember { ClienteViewModel() }
 
     Column(
         modifier = Modifier
@@ -40,7 +49,7 @@ fun LoginScreen(navController: NavHostController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFFFFC107))
-                .padding(top = 22.dp, bottom = 0.dp)
+                .padding(top = 22.dp)
         ) {
             IconButton(
                 onClick = { navController.popBackStack() },
@@ -93,7 +102,7 @@ fun LoginScreen(navController: NavHostController) {
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Campo de Email com underline
+            // Campo de Email
             TextField(
                 value = email,
                 onValueChange = { email = it },
@@ -110,10 +119,9 @@ fun LoginScreen(navController: NavHostController) {
                 },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors( // <<< CORRETO para M3 FilledTextField
-                    focusedIndicatorColor = Color.Black,     // linha selecionada
-                    unfocusedIndicatorColor = Color.Gray,    // linha normal
-                    // Garante que não há fundo preenchido
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Black,
+                    unfocusedIndicatorColor = Color.Gray,
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedLabelColor = Color.Black,
@@ -124,7 +132,7 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de Senha com underline
+            // Campo de Senha
             TextField(
                 value = senha,
                 onValueChange = { senha = it },
@@ -142,7 +150,7 @@ fun LoginScreen(navController: NavHostController) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.colors( // <<< CORRETO para M3 FilledTextField
+                colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = Color.Black,
                     unfocusedIndicatorColor = Color.Gray,
                     focusedContainerColor = Color.Transparent,
@@ -155,7 +163,6 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Esqueci a senha
             TextButton(
                 onClick = { /* TODO */ },
                 modifier = Modifier.align(Alignment.End)
@@ -164,8 +171,6 @@ fun LoginScreen(navController: NavHostController) {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            var isProfessor by remember { mutableStateOf(false) }
 
             Row(
                 modifier = Modifier
@@ -200,9 +205,19 @@ fun LoginScreen(navController: NavHostController) {
                 )
             }
 
-            // Botão Entrar
             Button(
-                onClick = { navController.navigate("home") },
+                onClick = {
+                    viewModel.validarEmail(email) { valido ->
+                        if (valido) {
+                            mensagemDialog = "E-mail válido! Entrando..."
+                            mostrarDialog = true
+                            navController.navigate("home")
+                        } else {
+                            mensagemDialog = "E-mail inválido!"
+                            mostrarDialog = true
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -215,30 +230,14 @@ fun LoginScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // Separador
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Divider(
-                    color = Color.Black,
-                    thickness = 1.dp,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    "  ou  ",
-                    fontSize = 14.sp,
-                    color = Color.Black,
-                    textAlign = TextAlign.Center
-                )
-                Divider(
-                    color = Color.Black,
-                    thickness = 1.dp,
-                    modifier = Modifier.weight(1f)
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.weight(1f))
+                Text("  ou  ", fontSize = 14.sp, color = Color.Black, textAlign = TextAlign.Center)
+                Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.weight(1f))
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botão Cadastre-se
             OutlinedButton(
                 onClick = { navController.navigate("signUp") },
                 modifier = Modifier
@@ -256,5 +255,18 @@ fun LoginScreen(navController: NavHostController) {
                 )
             }
         }
+    }
+
+    // 📢 Dialog de resultado
+    if (mostrarDialog) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialog = false },
+            confirmButton = {
+                TextButton(onClick = { mostrarDialog = false }) {
+                    Text("OK", color = Color.Black)
+                }
+            },
+            text = { Text(mensagemDialog, fontSize = 16.sp) }
+        )
     }
 }
