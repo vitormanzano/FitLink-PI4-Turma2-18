@@ -5,7 +5,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace FitLink.Models
 {
-    public class UserModel
+    public class ClientModel
     {
         [BsonId]
         [BsonRepresentation(BsonType.String)] // Salva o Guid como string
@@ -18,9 +18,9 @@ namespace FitLink.Models
         [BsonRepresentation(BsonType.String)]
         public string? PersonalId { get; private set; }
 
-        public UserModel() { } // Construtor vazio necessário para o MongoDB
+        public ClientModel() { } // Construtor vazio necessário para o MongoDB
 
-        public UserModel(string name, string email, string hashedPassword, string phone, string city)
+        public ClientModel(string name, string email, string hashedPassword, string phone, string city)
         {
             Id = Guid.NewGuid();
             Name = name;

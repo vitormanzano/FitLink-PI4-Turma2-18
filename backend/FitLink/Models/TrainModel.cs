@@ -8,7 +8,7 @@ namespace FitLink.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.String)] // Salva o Guid como string
         public Guid Id { get; private set; }
         public string Name { get; private set; }
-        public Guid UserId { get; private set; } // ID do usuário ao qual o treino pertence
+        public Guid ClientId { get; private set; } // ID do usuário ao qual o treino pertence
         public Guid PersonalId { get; private set; } // ID do personal trainer associado ao treino
 
         public List<ExerciseModel> Exercises { get; private set; }

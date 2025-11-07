@@ -18,8 +18,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddMongo(builder.Configuration);
 
 // Injeção de dependência
-builder.Services.AddScoped<IUserService, UserService>(); // AddScoped : Cria uma instância por requisição
-builder.Services.AddScoped<IUserRepository, UserRepository>(); 
+builder.Services.AddScoped<IClientService, ClientService>(); // AddScoped : Cria uma instância por requisição
+builder.Services.AddScoped<IClientRepository, ClientRepository>(); 
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IPersonalService, PersonalService>();
 builder.Services.AddScoped<IPersonalRepository, PersonalRepository>();

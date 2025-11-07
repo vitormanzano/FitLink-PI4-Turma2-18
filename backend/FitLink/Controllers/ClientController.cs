@@ -1,29 +1,28 @@
 ﻿using System.Security.Authentication;
-using System.Threading.Tasks;
-using FitLink.Dtos.User;
+using FitLink.Dtos.Client;
 using FitLink.Exceptions.User;
-using FitLink.Services.User;
+using FitLink.Services.Client;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FitLink.Controllers
 {
     [ApiController]
     [Route("[controller]")] // O nome da rota vai começar com o nome do controller | User
-    public class UserController : Controller
+    public class ClientController : Controller
     {
-        private readonly IUserService _userService;
+        private readonly IClientService _clientService;
 
-        public UserController(IUserService userService)
+        public ClientController(IClientService clientService)
         {
-            _userService = userService;
+            _clientService = clientService;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterUserDto user)
+        public async Task<IActionResult> Register([FromBody] RegisterClientDto client)
         {
             try
             {
-                await _userService.Register(user);
+                await _clientService.Register(client);
                 return Ok("Usuário inserido com sucesso!");
             }
             catch (Exception ex)
@@ -37,12 +36,12 @@ namespace FitLink.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginUserDto user)
+        public async Task<IActionResult> Login([FromBody] LoginClientDto client)
         {
             try
             {
-                var userInformations = await _userService.Login(user);
-                return Ok(userInformations);
+                var clientInformations = await _clientService.Login(client);
+                return Ok(clientInformations);
             }
             catch (Exception ex)
             {
@@ -60,8 +59,8 @@ namespace FitLink.Controllers
         {
             try
             {
-                var userResponse = await _userService.GetUserById(id);
-                return Ok(userResponse);
+                var clientResponse = await _clientService.GetClientById(id);
+                return Ok(clientResponse);
             }
             catch (Exception ex)
             {
@@ -78,7 +77,7 @@ namespace FitLink.Controllers
         {
             try
             {
-                var usersInCity = await _userService.GetUsersByCity(city);
+                var usersInCity = await _clientService.GetClientsByCity(city);
                 return Ok(usersInCity);
             }
             catch (Exception ex)
@@ -88,12 +87,12 @@ namespace FitLink.Controllers
         }
 
         [HttpPatch("update/{id}")]
-        public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UpdateUserDto updateUserDto)
+        public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UpdateClientDto updateClientDto)
         {
             try
             {
-                var updatedUser = await _userService.Update(id, updateUserDto);
-                return Ok(updatedUser);
+                var updatedClient = await _clientService.Update(id, updateClientDto);
+                return Ok(updatedClient);
             }
             catch (Exception ex)
             {
@@ -110,7 +109,7 @@ namespace FitLink.Controllers
         {
             try
             {
-                await _userService.Delete(id);
+                await _clientService.Delete(id);
                 return Ok();
             }
             catch (Exception ex)
@@ -123,12 +122,12 @@ namespace FitLink.Controllers
             }
         }
 
-        [HttpPatch("linkToPersonal/{userId}/{personalTrainerId}")]
-        public async Task<IActionResult> LinkUserToPersonal([FromRoute] string userId, [FromRoute] string personalTrainerId)
+        [HttpPatch("linkToPersonal/{clientId}/{personalTrainerId}")]
+        public async Task<IActionResult> LinkUserToPersonal([FromRoute] string clientId, [FromRoute] string personalTrainerId)
         {
             try
             {
-                await _userService.LinkUserToPersonal(userId, personalTrainerId);
+                await _clientService.LinkClientToPersonal(clientId, personalTrainerId);
                 return Ok("Usuário vinculado ao personal trainer com sucesso!");
             }
             catch (Exception ex)
