@@ -1,6 +1,6 @@
-﻿namespace FitLink.Dtos.User
+﻿namespace FitLink.Dtos.Client
 {
-    public record UpdateUserDto(
+    public record UpdateClientDto(
         string Name,
         string Email,
         string Password,

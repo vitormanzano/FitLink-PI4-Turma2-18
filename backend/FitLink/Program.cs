@@ -1,9 +1,11 @@
 using FitLink.PasswordHasher;
 using FitLink.Repository.Personal;
-using FitLink.Repository.User;
+using FitLink.Repository.Client;
 using FitLink.Services.Personal;
-using FitLink.Services.User;
+using FitLink.Services.Client;
 using FitLink.ServicesExtensions;
+using FitLink.Repository.Train;
+using FitLink.Services.Train;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,11 +20,15 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddMongo(builder.Configuration);
 
 // Injeção de dependência
-builder.Services.AddScoped<IUserService, UserService>(); // AddScoped : Cria uma instância por requisição
-builder.Services.AddScoped<IUserRepository, UserRepository>(); 
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddScoped<IClientService, ClientService>(); // AddScoped : Cria uma instância por requisição
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
-builder.Services.AddScoped<IPersonalService, PersonalService>();
+
 builder.Services.AddScoped<IPersonalRepository, PersonalRepository>();
+builder.Services.AddScoped<IPersonalService, PersonalService>();
+
+builder.Services.AddScoped<ITrainRepository, TrainRepository>();
+builder.Services.AddScoped<ITrainService, TrainService>();
 
 var app = builder.Build();
 

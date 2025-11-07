@@ -1,6 +1,6 @@
-﻿namespace FitLink.Dtos.User
+﻿namespace FitLink.Dtos.Client
 {
-    public record RegisterUserDto(
+    public record RegisterClientDto(
         string Name,
         string Email,
         string Password,
