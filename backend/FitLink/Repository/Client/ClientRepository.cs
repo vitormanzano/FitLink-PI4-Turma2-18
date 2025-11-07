@@ -7,7 +7,7 @@ namespace FitLink.Repository.Client
 {
     public class ClientRepository : BaseRepository<ClientModel>, IClientRepository
     {
-        public ClientRepository(IMongoDatabase database) : base(database, "users") // passa pro BaseRepository
+        public ClientRepository(IMongoDatabase database) : base(database, "clients") // passa pro BaseRepository
         {
             
         }

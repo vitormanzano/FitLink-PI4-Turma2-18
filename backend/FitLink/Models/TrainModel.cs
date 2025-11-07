@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace FitLink.Models
 {
@@ -8,18 +9,20 @@ namespace FitLink.Models
         [BsonRepresentation(MongoDB.Bson.BsonType.String)] // Salva o Guid como string
         public Guid Id { get; private set; }
         public string Name { get; private set; }
-        public Guid ClientId { get; private set; } // ID do usuário ao qual o treino pertence
-        public Guid PersonalId { get; private set; } // ID do personal trainer associado ao treino
+        [BsonRepresentation(BsonType.String)]
+        public string ClientId { get; private set; } // ID do usuário ao qual o treino pertence
+        [BsonRepresentation(BsonType.String)]
+        public string PersonalId { get; private set; } // ID do personal trainer associado ao treino
 
         public List<ExerciseModel> Exercises { get; private set; }
 
         public TrainModel() { } // Construtor vazio necessário para o MongoDB
 
-        public TrainModel(string name, Guid userId, Guid personalId, List<ExerciseModel> exercises)
+        public TrainModel(string name, string clientId, string personalId, List<ExerciseModel> exercises)
         {
             Id = Guid.NewGuid();
             Name = name;
-            UserId = userId;
+            ClientId = clientId;
             PersonalId = personalId;
             Exercises = exercises;
         }

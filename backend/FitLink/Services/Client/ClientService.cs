@@ -1,5 +1,5 @@
 ﻿using System.Security.Authentication;
-using FitLink.Dtos.User;
+using FitLink.Dtos.Client;
 using FitLink.Exceptions.User;
 using FitLink.Models;
 using FitLink.PasswordHasher;
