@@ -63,7 +63,7 @@ A coleção users guarda as informações dos clientes, incluindo nome, e-mail, 
 A coleção personal contém os dados dos profissionais de educação física, como nome, e-mail, senha, telefone, CREF e CPF.
 Já a coleção treino registra os treinos personalizados, com o nome do treino, o identificador do cliente (clienteId), o identificador do personal responsável (personalId) e uma lista de exercícios. Cada exercício possui nome, instruções e uma ou mais séries, que detalham o número da série, o número de repetições, a carga utilizada (em kg) e observações adicionais.
 
-![img.png](DiagramaMongo.png)
+![img.png](docs/ModeloBancoDeDados.png)
 
 Processo Escolhido:
 
