@@ -8,6 +8,11 @@
 mobile/.idea
 **/.idea
 
+# Visual studio files
+.vs/
+bin/
+obj/
+
 # MacOs Files
 .DS_Store
 **/.DS_Store
