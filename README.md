@@ -101,7 +101,7 @@ Client significa aluno
 
 ## Processo
 O processo escolhido foi o de cadastro de aluno, criar uma conta para um aluno.
-O nosso projeto conta com 3 projetos menores, que se relacionam.
+O projeto conta com 3 projetos menores, que se relacionam.
 <br>
 <ul>
   <li>Aplicativo Mobile</li>
