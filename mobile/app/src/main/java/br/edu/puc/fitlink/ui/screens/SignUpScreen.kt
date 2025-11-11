@@ -23,8 +23,12 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import br.edu.puc.fitlink.R
+import br.edu.puc.fitlink.auth.AuthViewModel
+import br.edu.puc.fitlink.data.model.RegisterClientDto
+import br.edu.puc.fitlink.data.model.RegisterPersonalDto
 
 @Composable
 fun SignUpScreen(navController: NavHostController) {
@@ -37,15 +41,19 @@ fun SignUpScreen(navController: NavHostController) {
     var senhaVisivel by remember { mutableStateOf(false) }
     var isProfessor by remember { mutableStateOf(false) }
 
+    var mostrarDialog by remember { mutableStateOf(false) }
+    var mensagemDialog by remember { mutableStateOf("") }
+
     val scrollState = rememberScrollState()
+    val authVm: AuthViewModel = viewModel()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .verticalScroll(scrollState) // ✅ rolagem ativada
+            .verticalScroll(scrollState)
     ) {
-        // ======= Topo amarelo =======
+        // ===== TOPO =====
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -64,7 +72,7 @@ fun SignUpScreen(navController: NavHostController) {
             }
         }
 
-        // ======= Logo =======
+        // ===== LOGO =====
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -92,7 +100,7 @@ fun SignUpScreen(navController: NavHostController) {
             }
         }
 
-        // ======= Corpo branco (scrollável) =======
+        // ===== CAMPOS =====
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -101,9 +109,8 @@ fun SignUpScreen(navController: NavHostController) {
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ======= Campos dinâmicos =======
             if (!isProfessor) {
-                // -------- CADASTRO DE ALUNO --------
+                // --- Aluno ---
                 TextField(
                     value = nome,
                     onValueChange = { nome = it },
@@ -142,7 +149,7 @@ fun SignUpScreen(navController: NavHostController) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             } else {
-                // -------- CADASTRO DE PROFESSOR --------
+                // --- Professor ---
                 TextField(
                     value = nome,
                     onValueChange = { nome = it },
@@ -172,7 +179,7 @@ fun SignUpScreen(navController: NavHostController) {
                 TextField(
                     value = cref,
                     onValueChange = { cref = it },
-                    label = { Text("Cref") },
+                    label = { Text("CREF") },
                     leadingIcon = { Icon(Icons.Default.Badge, contentDescription = null) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -193,7 +200,7 @@ fun SignUpScreen(navController: NavHostController) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // ======= Campo de senha =======
+            // ===== SENHA =====
             TextField(
                 value = senha,
                 onValueChange = { senha = it },
@@ -216,7 +223,7 @@ fun SignUpScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ======= Switch Aluno/Professor =======
+            // ===== SWITCH =====
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -252,9 +259,38 @@ fun SignUpScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ======= Botão Cadastrar =======
+            // ===== BOTÃO CADASTRAR =====
             Button(
-                onClick = { navController.navigate("home") },
+                onClick = {
+                    if (isProfessor) {
+                        val dto = RegisterPersonalDto(
+                            name = nome,
+                            email = email,
+                            password = senha,
+                            city = "cidadeteste",
+                            cpf = cpf,
+                            cref = cref
+                        )
+                        authVm.registerPersonal(dto) { ok, msg ->
+                            mensagemDialog = msg
+                            mostrarDialog = true
+                            if (ok) navController.navigate("login")
+                        }
+                    } else {
+                        val dto = RegisterClientDto(
+                            name = nome,
+                            email = email,
+                            password = senha,
+                            phone = telefone,
+                            city = "cidadeteste"
+                        )
+                        authVm.register(dto) { ok, msg ->
+                            mensagemDialog = msg
+                            mostrarDialog = true
+                            if (ok) navController.navigate("login")
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -266,7 +302,7 @@ fun SignUpScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ======= Separador =======
+            // ===== SEPARADOR =====
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.weight(1f))
                 Text("  ou  ", fontSize = 14.sp, color = Color.Black)
@@ -275,7 +311,7 @@ fun SignUpScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ======= Botão Entrar =======
+            // ===== BOTÃO ENTRAR =====
             OutlinedButton(
                 onClick = { navController.navigate("login") },
                 modifier = Modifier
@@ -290,6 +326,19 @@ fun SignUpScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+
+    // ===== DIALOG =====
+    if (mostrarDialog) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialog = false },
+            confirmButton = {
+                TextButton(onClick = { mostrarDialog = false }) {
+                    Text("OK", color = Color.Black)
+                }
+            },
+            text = { Text(mensagemDialog, fontSize = 16.sp) }
+        )
     }
 }
 

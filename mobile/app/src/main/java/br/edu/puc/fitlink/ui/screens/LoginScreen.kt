@@ -21,9 +21,13 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import br.edu.puc.fitlink.R
+import br.edu.puc.fitlink.auth.AuthViewModel
+import br.edu.puc.fitlink.data.model.LoginClientDto
 import br.edu.puc.fitlink.validations.ClienteViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -33,18 +37,19 @@ fun LoginScreen(navController: NavHostController) {
     var senhaVisivel by remember { mutableStateOf(false) }
     var isProfessor by remember { mutableStateOf(false) }
 
-    // novo estado para exibir mensagem de validação
     var mostrarDialog by remember { mutableStateOf(false) }
     var mensagemDialog by remember { mutableStateOf("") }
 
-    val viewModel = remember { ClienteViewModel() }
+    val socketVm = remember { ClienteViewModel() }
+    val apiVm: AuthViewModel = viewModel()
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Topo amarelo com botão de voltar
+        // ===== TOPO =====
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -63,7 +68,7 @@ fun LoginScreen(navController: NavHostController) {
             }
         }
 
-        // Logo e título
+        // ===== LOGO =====
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -93,7 +98,7 @@ fun LoginScreen(navController: NavHostController) {
             }
         }
 
-        // Corpo branco
+        // ===== CAMPOS =====
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -102,21 +107,12 @@ fun LoginScreen(navController: NavHostController) {
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Campo de Email
+            // Email
             TextField(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
-                leadingIcon = { Icon(imageVector = Icons.Default.Email, contentDescription = null) },
-                trailingIcon = {
-                    if (email.isNotEmpty()) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Check",
-                            tint = Color.Black
-                        )
-                    }
-                },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
@@ -132,12 +128,12 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de Senha
+            // Senha
             TextField(
                 value = senha,
                 onValueChange = { senha = it },
                 label = { Text("Senha") },
-                leadingIcon = { Icon(imageVector = Icons.Default.Lock, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                 trailingIcon = {
                     IconButton(onClick = { senhaVisivel = !senhaVisivel }) {
                         Icon(
@@ -164,7 +160,7 @@ fun LoginScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.height(8.dp))
 
             TextButton(
-                onClick = { /* TODO */ },
+                onClick = { /* TODO: recuperar senha */ },
                 modifier = Modifier.align(Alignment.End)
             ) {
                 Text("Esqueci a senha", color = Color.Black, fontSize = 14.sp)
@@ -172,6 +168,7 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // ===== Switch aluno/professor =====
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -205,16 +202,35 @@ fun LoginScreen(navController: NavHostController) {
                 )
             }
 
+            // ===== BOTÃO LOGIN =====
             Button(
                 onClick = {
-                    viewModel.validarEmail(email) { valido ->
-                        if (valido) {
-                            mensagemDialog = "E-mail válido! Entrando..."
-                            mostrarDialog = true
-                            navController.navigate("home")
-                        } else {
-                            mensagemDialog = "E-mail inválido!"
-                            mostrarDialog = true
+                    scope.launch {
+                        // 1️⃣ Valida via socket
+                        socketVm.validarEmail(email) { valido ->
+                            if (valido) {
+                                mensagemDialog = "E-mail válido! Entrando..."
+                                mostrarDialog = true
+
+                                // 2️⃣ Espera um pouquinho pra feedback visual
+                                scope.launch {
+                                    delay(1000)
+
+                                    // 3️⃣ Agora faz login real via API
+                                    val dto = LoginClientDto(email, senha)
+                                    apiVm.login(dto) { ok, user, erro ->
+                                        if (ok && user != null) {
+                                            mensagemDialog = "Bem-vindo, ${user.name}!"
+                                            navController.navigate("home")
+                                        } else {
+                                            mensagemDialog = erro ?: "Falha no login. Verifique seus dados."
+                                        }
+                                    }
+                                }
+                            } else {
+                                mensagemDialog = "E-mail inválido!"
+                                mostrarDialog = true
+                            }
                         }
                     }
                 },
@@ -224,12 +240,12 @@ fun LoginScreen(navController: NavHostController) {
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Entre", fontSize = 18.sp, color = Color.Black, fontWeight = FontWeight.Bold)
+                Text("Entrar", fontSize = 18.sp, color = Color.Black, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Separador
+            // ===== SEPARADOR =====
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.weight(1f))
                 Text("  ou  ", fontSize = 14.sp, color = Color.Black, textAlign = TextAlign.Center)
@@ -238,6 +254,7 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // ===== BOTÃO CADASTRO =====
             OutlinedButton(
                 onClick = { navController.navigate("signUp") },
                 modifier = Modifier
@@ -257,7 +274,7 @@ fun LoginScreen(navController: NavHostController) {
         }
     }
 
-    // 📢 Dialog de resultado
+    // ===== DIALOG =====
     if (mostrarDialog) {
         AlertDialog(
             onDismissRequest = { mostrarDialog = false },
