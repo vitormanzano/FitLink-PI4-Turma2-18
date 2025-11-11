@@ -43,8 +43,9 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = RetrofitInstance.personalApi.register(dto) // <-- personalApi
-                if (response.isSuccessful)
-                    onResult(true, response.body() ?: "Personal cadastrado com sucesso!")
+                if (response.isSuccessful){
+                    val body = response.body()?.string() ?: "Cadastro realizado!"
+                    onResult(true, body)}
                 else
                     onResult(false, response.errorBody()?.string() ?: "Erro no cadastro")
             } catch (e: Exception) {

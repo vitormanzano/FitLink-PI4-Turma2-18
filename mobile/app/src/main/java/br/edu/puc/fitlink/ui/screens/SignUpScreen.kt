@@ -29,6 +29,9 @@ import br.edu.puc.fitlink.R
 import br.edu.puc.fitlink.auth.AuthViewModel
 import br.edu.puc.fitlink.data.model.RegisterClientDto
 import br.edu.puc.fitlink.data.model.RegisterPersonalDto
+import br.edu.puc.fitlink.validations.ClienteViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun SignUpScreen(navController: NavHostController) {
@@ -46,6 +49,8 @@ fun SignUpScreen(navController: NavHostController) {
 
     val scrollState = rememberScrollState()
     val authVm: AuthViewModel = viewModel()
+    val socketVm = remember { ClienteViewModel() }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -110,7 +115,7 @@ fun SignUpScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             if (!isProfessor) {
-                // --- Aluno ---
+                // --- ALUNO ---
                 TextField(
                     value = nome,
                     onValueChange = { nome = it },
@@ -149,13 +154,25 @@ fun SignUpScreen(navController: NavHostController) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             } else {
-                // --- Professor ---
+                // --- PROFESSOR ---
                 TextField(
                     value = nome,
                     onValueChange = { nome = it },
                     label = { Text("Nome") },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                     singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = underlineColors()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    value = telefone,
+                    onValueChange = { telefone = it },
+                    label = { Text("Telefone") },
+                    leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     modifier = Modifier.fillMaxWidth(),
                     colors = underlineColors()
                 )
@@ -262,32 +279,55 @@ fun SignUpScreen(navController: NavHostController) {
             // ===== BOTÃO CADASTRAR =====
             Button(
                 onClick = {
-                    if (isProfessor) {
-                        val dto = RegisterPersonalDto(
-                            name = nome,
-                            email = email,
-                            password = senha,
-                            city = "cidadeteste",
-                            cpf = cpf,
-                            cref = cref
-                        )
-                        authVm.registerPersonal(dto) { ok, msg ->
-                            mensagemDialog = msg
-                            mostrarDialog = true
-                            if (ok) navController.navigate("login")
-                        }
-                    } else {
-                        val dto = RegisterClientDto(
-                            name = nome,
-                            email = email,
-                            password = senha,
-                            phone = telefone,
-                            city = "cidadeteste"
-                        )
-                        authVm.register(dto) { ok, msg ->
-                            mensagemDialog = msg
-                            mostrarDialog = true
-                            if (ok) navController.navigate("login")
+                    scope.launch {
+                        // 1️⃣ Valida o e-mail via socket antes do cadastro
+                        socketVm.validarEmail(email) { valido ->
+                            if (valido) {
+                                mensagemDialog = "E-mail válido! Cadastrando..."
+                                mostrarDialog = true
+
+                                // 2️⃣ Pequeno delay pra mostrar o feedback na UI
+                                scope.launch {
+                                    delay(1000)
+
+                                    if (isProfessor) {
+                                        val dto = RegisterPersonalDto(
+                                            name = nome,
+                                            email = email,
+                                            password = senha,
+                                            city = "cidadeteste",
+                                            cpf = cpf,
+                                            cref = cref,
+                                            phone = telefone // ✅ telefone também no professor
+                                        )
+
+                                        // 3️⃣ Chama a API de cadastro de personal
+                                        authVm.registerPersonal(dto) { ok, msg ->
+                                            mensagemDialog = msg
+                                            mostrarDialog = true
+                                            if (ok) navController.navigate("login")
+                                        }
+                                    } else {
+                                        val dto = RegisterClientDto(
+                                            name = nome,
+                                            email = email,
+                                            password = senha,
+                                            phone = telefone,
+                                            city = "cidadeteste"
+                                        )
+
+                                        // 3️⃣ Chama a API de cadastro de cliente
+                                        authVm.register(dto) { ok, msg ->
+                                            mensagemDialog = msg
+                                            mostrarDialog = true
+                                            if (ok) navController.navigate("login")
+                                        }
+                                    }
+                                }
+                            } else {
+                                mensagemDialog = "E-mail inválido!"
+                                mostrarDialog = true
+                            }
                         }
                     }
                 },
@@ -297,7 +337,12 @@ fun SignUpScreen(navController: NavHostController) {
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Cadastre-se", fontSize = 18.sp, color = Color.Black, fontWeight = FontWeight.Bold)
+                Text(
+                    "Cadastre-se",
+                    fontSize = 18.sp,
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))

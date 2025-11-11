@@ -25,7 +25,7 @@ interface ClientApi {
 // ======== PERSONAL API ========
 interface PersonalApi {
     @POST("Personal/register")
-    suspend fun register(@Body dto: RegisterPersonalDto): Response<String>
+    suspend fun register(@Body dto: RegisterPersonalDto): Response<ResponseBody>
 }
 
 // ======== RETROFIT INSTANCE ========
