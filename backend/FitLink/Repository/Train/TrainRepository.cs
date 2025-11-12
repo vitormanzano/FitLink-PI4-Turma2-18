@@ -9,5 +9,14 @@ namespace FitLink.Repository.Train
         public TrainRepository(IMongoDatabase database) : base(database, "trains")
         {
         }
+
+        public async Task<TrainModel> GetTrainByClientId(string clientId)
+        {
+            var filter = Builders<TrainModel>.Filter
+                .Eq(t => t.ClientId, clientId);
+
+            return await _collection.Find(filter)
+                .FirstOrDefaultAsync();
+        }
     }
 }
