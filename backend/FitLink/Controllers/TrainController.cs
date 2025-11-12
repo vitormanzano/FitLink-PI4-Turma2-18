@@ -71,5 +71,23 @@ namespace FitLink.Controllers
                 };
             }
         }
+
+        [HttpDelete("DeleteById/{trainId}")]
+        public async Task<IActionResult> DeleteById([FromRoute] string trainId)
+        {
+            try
+            {
+                await _trainService.DeleteTrainById(trainId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    TrainNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex),
+                };
+            }
+        }
     }
 }
