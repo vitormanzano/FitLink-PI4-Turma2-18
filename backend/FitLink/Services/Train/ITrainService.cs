@@ -8,5 +8,6 @@ namespace FitLink.Services.Train
         Task<ResponseTrainDto> GetTrainById(string trainId);
         Task<ResponseTrainDto> GetTrainByClientId(string clientId);
         Task DeleteTrainById(string trainId);
+        Task<List<ResponseTrainDto>> GetTrainsByPersonalId(string personalId);
     }
 }

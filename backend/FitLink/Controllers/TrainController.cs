@@ -22,8 +22,8 @@ namespace FitLink.Controllers
         {
             try
             {
-                await _trainService.Register(registerTrainDto);
-                return Ok();
+                var train = await _trainService.Register(registerTrainDto);
+                return Ok(train);
             }
             catch (Exception ex)
             {
@@ -84,6 +84,25 @@ namespace FitLink.Controllers
             {
                 return ex switch
                 {
+                    TrainNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex),
+                };
+            }
+        }
+
+        [HttpGet("GetTrainsByPersonalId/{personalId}")]
+        public async Task<IActionResult> GetTrainsByPersonalId([FromRoute] string personalId)
+        {
+            try
+            {
+                var trains = await _trainService.GetTrainsByPersonalId(personalId);
+                return Ok(trains);
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
                     TrainNotFoundException => NotFound(ex.Message),
                     _ => BadRequest(ex),
                 };
