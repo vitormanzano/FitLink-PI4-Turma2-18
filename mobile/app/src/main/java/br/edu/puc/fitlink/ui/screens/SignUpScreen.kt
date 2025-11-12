@@ -51,6 +51,7 @@ fun SignUpScreen(navController: NavHostController) {
     var mostrarDialog by remember { mutableStateOf(false) }
     var mensagemDialog by remember { mutableStateOf("") }
     var tipoMensagem by remember { mutableStateOf("info") }
+    var carregando by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
     val authVm: AuthViewModel = viewModel()
@@ -74,11 +75,7 @@ fun SignUpScreen(navController: NavHostController) {
                 onClick = { navController.popBackStack() },
                 modifier = Modifier.align(Alignment.TopStart)
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Voltar",
-                    tint = Color.Black
-                )
+                Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = Color.Black)
             }
         }
 
@@ -90,20 +87,18 @@ fun SignUpScreen(navController: NavHostController) {
                 .padding(top = 40.dp, bottom = 48.dp)
         ) {
             Column(
-                modifier = Modifier.align(Alignment.Center),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.align(Alignment.Center)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.logo_fitlink),
                     contentDescription = "Logo FitLink",
-                    modifier = Modifier
-                        .height(120.dp)
-                        .width(120.dp)
+                    modifier = Modifier.size(120.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "FitLink",
-                    fontSize = 60.sp,
+                    fontSize = 52.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
@@ -119,70 +114,23 @@ fun SignUpScreen(navController: NavHostController) {
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- CAMPOS COMUNS ---
-            TextField(
-                value = nome,
-                onValueChange = { nome = it },
-                label = { Text("Nome") },
-                leadingIcon = { Icon(Icons.Default.Person, null) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = underlineColors()
-            )
+            InputField("Nome", nome, { nome = it }, Icons.Default.Person)
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextField(
-                value = telefone,
-                onValueChange = { telefone = it },
-                label = { Text("Telefone") },
-                leadingIcon = { Icon(Icons.Default.Phone, null) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                modifier = Modifier.fillMaxWidth(),
-                colors = underlineColors()
-            )
+            InputField("Telefone", telefone, { telefone = it }, Icons.Default.Phone, KeyboardType.Phone)
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                leadingIcon = { Icon(Icons.Default.Email, null) },
-                trailingIcon = {
-                    if (email.isNotEmpty()) Icon(Icons.Default.Check, null, tint = Color.Black)
-                },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier.fillMaxWidth(),
-                colors = underlineColors()
-            )
+            InputField("Email", email, { email = it }, Icons.Default.Email, KeyboardType.Email)
             Spacer(modifier = Modifier.height(16.dp))
 
             if (isProfessor) {
-                TextField(
-                    value = cref,
-                    onValueChange = { cref = it },
-                    label = { Text("CREF") },
-                    leadingIcon = { Icon(Icons.Default.Badge, null) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = underlineColors()
-                )
+                InputField("CREF", cref, { cref = it }, Icons.Default.Badge)
                 Spacer(modifier = Modifier.height(16.dp))
-
-                TextField(
-                    value = cpf,
-                    onValueChange = { cpf = it },
-                    label = { Text("CPF") },
-                    leadingIcon = { Icon(Icons.Default.CreditCard, null) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = underlineColors()
-                )
+                InputField("CPF", cpf, { cpf = it }, Icons.Default.CreditCard, KeyboardType.Number)
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
+            // ===== SENHA =====
             TextField(
                 value = senha,
                 onValueChange = { senha = it },
@@ -207,13 +155,17 @@ fun SignUpScreen(navController: NavHostController) {
 
             // ===== SWITCH =====
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Aluno", fontSize = 18.sp, color = if (!isProfessor) Color.Black else Color.Gray)
+                Text(
+                    "Aluno",
+                    fontSize = 18.sp,
+                    fontWeight = if (!isProfessor) FontWeight.Bold else FontWeight.Normal,
+                    color = if (!isProfessor) Color.Black else Color.Gray
+                )
+
                 Switch(
                     checked = isProfessor,
                     onCheckedChange = { isProfessor = it },
@@ -224,15 +176,22 @@ fun SignUpScreen(navController: NavHostController) {
                         uncheckedTrackColor = Color.Black
                     )
                 )
-                Text("Professor", fontSize = 18.sp, color = if (isProfessor) Color.Black else Color.Gray)
+
+                Text(
+                    "Professor",
+                    fontSize = 18.sp,
+                    fontWeight = if (isProfessor) FontWeight.Bold else FontWeight.Normal,
+                    color = if (isProfessor) Color.Black else Color.Gray
+                )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // ===== BOTÃO CADASTRAR =====
             Button(
                 onClick = {
                     scope.launch {
+                        carregando = true
                         socketVm.validarEmail(email) { valido ->
                             if (valido) {
                                 tipoMensagem = "success"
@@ -240,8 +199,7 @@ fun SignUpScreen(navController: NavHostController) {
                                 mostrarDialog = true
 
                                 scope.launch {
-                                    delay(1000) // tempo para mostrar mensagem antes do cadastro
-
+                                    delay(1000)
                                     if (isProfessor) {
                                         val dto = RegisterPersonalDto(
                                             name = nome,
@@ -254,15 +212,15 @@ fun SignUpScreen(navController: NavHostController) {
                                         )
 
                                         authVm.registerPersonal(dto) { ok, msg ->
+                                            carregando = false
                                             tipoMensagem = if (ok) "success" else "error"
                                             mensagemDialog = if (ok)
                                                 "Cadastro realizado com sucesso!"
                                             else
                                                 "Erro: $msg"
                                             mostrarDialog = true
-
                                             scope.launch {
-                                                delay(2000)
+                                                delay(1500)
                                                 if (ok) navController.navigate("login")
                                             }
                                         }
@@ -276,13 +234,13 @@ fun SignUpScreen(navController: NavHostController) {
                                         )
 
                                         authVm.register(dto) { ok, msg ->
+                                            carregando = false
                                             tipoMensagem = if (ok) "success" else "error"
                                             mensagemDialog = if (ok)
                                                 "Cadastro realizado com sucesso!"
                                             else
                                                 "Erro: $msg"
                                             mostrarDialog = true
-
                                             scope.launch {
                                                 delay(1500)
                                                 if (ok) navController.navigate("login")
@@ -291,6 +249,7 @@ fun SignUpScreen(navController: NavHostController) {
                                     }
                                 }
                             } else {
+                                carregando = false
                                 tipoMensagem = "error"
                                 mensagemDialog = "E-mail inválido!"
                                 mostrarDialog = true
@@ -301,17 +260,48 @@ fun SignUpScreen(navController: NavHostController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
             ) {
-                Text("Cadastre-se", fontSize = 18.sp, color = Color.Black, fontWeight = FontWeight.Bold)
+                if (carregando)
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(26.dp),
+                        color = Color.Black,
+                        strokeWidth = 3.dp
+                    )
+                else
+                    Text("Cadastre-se", fontSize = 18.sp, color = Color.Black, fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ===== SEPARADOR =====
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.weight(1f))
+                Text("  ou  ", fontSize = 14.sp, color = Color.Black)
+                Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.weight(1f))
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ===== BOTÃO ENTRAR =====
+            OutlinedButton(
+                onClick = { navController.navigate("login") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                border = BorderStroke(1.dp, Color.Black),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
+            ) {
+                Text("Entre", fontSize = 18.sp, color = Color.Black, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
 
-    // ===== DIALOG BONITA =====
+    // ===== DIALOG BONITO =====
     AnimatedVisibility(
         visible = mostrarDialog,
         enter = fadeIn(),
@@ -320,20 +310,21 @@ fun SignUpScreen(navController: NavHostController) {
         Box(
             Modifier
                 .fillMaxSize()
-                .background(Color(0x88000000))
+                .background(Color(0x66000000))
                 .wrapContentSize(Alignment.Center)
         ) {
             Card(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .padding(32.dp),
+                    .clip(RoundedCornerShape(16.dp))
+                    .padding(24.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = when (tipoMensagem) {
                         "success" -> Color(0xFFDFFFD6)
                         "error" -> Color(0xFFFFD6D6)
                         else -> Color(0xFFFFF6CC)
                     }
-                )
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Column(
                     Modifier.padding(24.dp),
@@ -358,8 +349,8 @@ fun SignUpScreen(navController: NavHostController) {
                         text = mensagemDialog,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color.Black,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        color = Color.Black
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     TextButton(onClick = { mostrarDialog = false }) {
@@ -369,6 +360,27 @@ fun SignUpScreen(navController: NavHostController) {
             }
         }
     }
+}
+
+// ===== COMPONENTES AUX =====
+@Composable
+private fun InputField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        leadingIcon = { Icon(icon, null) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        modifier = Modifier.fillMaxWidth(),
+        colors = underlineColors()
+    )
 }
 
 @Composable
