@@ -19,11 +19,8 @@ namespace FitLink.Repository.Personal
 
         public async Task<IEnumerable<PersonalTrainerModel>> GetPersonalTrainersByCity(string city)
         {
-            var limitToReturn = 5;
-
             var filter = Builders<PersonalTrainerModel>.Filter.Eq(p => p.City, city);
             return await _collection.Find(filter)
-                .Limit(limitToReturn)
                 .ToListAsync();
         }
 

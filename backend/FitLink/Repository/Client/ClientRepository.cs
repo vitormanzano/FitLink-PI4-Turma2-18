@@ -20,11 +20,8 @@ namespace FitLink.Repository.Client
 
         public async Task<IEnumerable<ClientModel>> GetClientsByCity(string city)
         {
-            var limitToReturn = 5;
-
             var filter = Builders<ClientModel>.Filter.Eq(p => p.City, city);
             return await _collection.Find(filter)
-                .Limit(limitToReturn)
                 .ToListAsync();
         }
 

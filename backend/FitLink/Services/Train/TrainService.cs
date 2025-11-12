@@ -91,5 +91,20 @@ namespace FitLink.Services.Train
 
             await _trainRepository.DeleteDocumentAsync(t => t.Id.ToString() == trainId);
         }
+
+        public async Task<List<ResponseTrainDto>> GetTrainsByPersonalId(string personalId)
+        {
+            var personal = await _personalRepository.GetDocumentByIdAsync(personalId);
+
+            if (personal is null)
+                throw new UserNotFoundException("Personal não encontrado!");
+
+            var trains = await _trainRepository.GetTrainsByPersonalId(personalId);
+
+            if (trains.Count == 0)
+                throw new TrainNotFoundException("Nenhum treino encontrado para este personal!");
+
+            return trains.Select(t => t.ModelToResponseDto()).ToList();
+        }
     }
 }
