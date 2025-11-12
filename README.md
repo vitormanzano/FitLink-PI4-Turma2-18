@@ -99,16 +99,33 @@ Client significa aluno
 | `DELETE` | `/Personal/delete/{id}`                                 | Deleta o registro de um personal            |
 |          |                                                         |                                             |
 
+## Processo
+O processo escolhido foi o de cadastro de aluno, criar uma conta para um aluno.
+O projeto conta com 3 projetos menores, que se relacionam.
+<br>
+<ul>
+  <li>Aplicativo Mobile</li>
+  <li>Server Java</li>
+  <li>API .Net</li>
+</ul>
+
+## Arquitetura 
+
+![Arquitetura.png](docs/ArquiteturaSimplificada.png)
 
 Intruções de Execução:
 
-1-Clonar o repositório
+1 - Clonar o repositório
 git clone https://github.com/usuario/FitLink-PI4-Turma2-18.git
 cd FitLink-PI4-Turma2-18
 
-2-Executar o servidor Java
+2 - Executar o servidor Java
 javac Servidor.java
 java Servidor 3000
 
-3-Certifique-se de que o MongoDB está em execução
+3 - Executar aplicativo Mobile
+
+4 - Executar api .Net
+
+5 - Certifique-se de que o MongoDB está em execução
 mongod
