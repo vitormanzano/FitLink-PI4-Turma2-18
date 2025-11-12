@@ -11,7 +11,7 @@ namespace FitLink.Controllers
     public class TrainController : Controller
     {
         private readonly ITrainService _trainService;
-        
+
         public TrainController(ITrainService trainService)
         {
             _trainService = trainService;
@@ -29,7 +29,7 @@ namespace FitLink.Controllers
             {
                 return ex switch
                 {
-                    UserNotFoundException => NotFound(ex),
+                    UserNotFoundException => NotFound(ex.Message),
                     _ => BadRequest(ex),
                 };
             }
@@ -47,7 +47,26 @@ namespace FitLink.Controllers
             {
                 return ex switch
                 {
-                    TrainNotFoundException => NotFound(ex),
+                    TrainNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex),
+                };
+            }
+        }
+
+        [HttpGet("GetByClientId/{clientId}")]
+        public async Task<IActionResult> GetByClientId([FromRoute] string clientId)
+        {
+            try
+            {
+                var trains = await _trainService.GetTrainByClientId(clientId);
+                return Ok(trains);
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    TrainNotFoundException => NotFound(ex.Message),
                     _ => BadRequest(ex),
                 };
             }

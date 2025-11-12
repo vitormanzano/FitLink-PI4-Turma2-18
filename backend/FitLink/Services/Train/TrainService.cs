@@ -1,6 +1,7 @@
 ﻿using FitLink.Dtos.Train;
 using FitLink.Exceptions.Train;
 using FitLink.Exceptions.User;
+using FitLink.Mappers.Train;
 using FitLink.Models;
 using FitLink.Repository.Client;
 using FitLink.Repository.Personal;
@@ -21,7 +22,7 @@ namespace FitLink.Services.Train
             _trainRepository = trainRepository;
         }
 
-        public async Task Register(RegisterTrainDto registerTrainDto)
+        public async Task<ResponseTrainDto> Register(RegisterTrainDto registerTrainDto)
         {
             var clientExist = await _clientRepository.GetDocumentByIdAsync(registerTrainDto.ClientId);
 
@@ -52,6 +53,8 @@ namespace FitLink.Services.Train
                 exercises);
 
             await _trainRepository.InsertDocumentAsync(train);
+
+            return train.ModelToResponseDto();
         }
 
         public async Task<ResponseTrainDto> GetTrainById(string trainId)
@@ -61,26 +64,22 @@ namespace FitLink.Services.Train
             if (train is null)
                 throw new TrainNotFoundException();
 
-            var trainResponse = new ResponseTrainDto
-            (
-                train.Id,
-                train.Name,
-                train.ClientId,
-                train.PersonalId,
-                train.Exercises.Select(e => new ResponseExerciseDto
-                (
-                    e.Name,
-                    e.Instructions,
-                    e.Sets.Select(s => new ResponseSetDto
-                    (
-                        s.Number,
-                        s.NumberOfRepetitions,
-                        s.Weight
-                    )).ToList()
-                )).ToList()
-            );
+            return train.ModelToResponseDto();
+        }
 
-            return trainResponse;
+        public async Task<ResponseTrainDto> GetTrainByClientId(string clientId)
+        {
+            var client = await _clientRepository.GetDocumentByIdAsync(clientId);
+
+            if (client is null)
+                throw new UserNotFoundException();
+
+            var train = await _trainRepository.GetTrainByClientId(clientId);
+
+            if (train is null)
+                throw new TrainNotFoundException();
+
+            return train.ModelToResponseDto();
         }
     }
 }

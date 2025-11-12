@@ -5,7 +5,8 @@ namespace FitLink.Services.Train
 {
     public interface ITrainService
     {
-        Task Register(RegisterTrainDto registerTrainDto);
+        Task<ResponseTrainDto> Register(RegisterTrainDto registerTrainDto);
         Task<ResponseTrainDto> GetTrainById(string trainId);
+        Task<ResponseTrainDto> GetTrainByClientId(string clientId);
     }
 }
