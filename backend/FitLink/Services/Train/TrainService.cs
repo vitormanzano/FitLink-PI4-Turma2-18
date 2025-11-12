@@ -81,5 +81,15 @@ namespace FitLink.Services.Train
 
             return train.ModelToResponseDto();
         }
+
+        public async Task DeleteTrainById(string trainId)
+        {
+            var train = await _trainRepository.GetDocumentByIdAsync(trainId);
+
+            if (train is null)
+                throw new TrainNotFoundException();
+
+            await _trainRepository.DeleteDocumentAsync(t => t.Id.ToString() == trainId);
+        }
     }
 }
