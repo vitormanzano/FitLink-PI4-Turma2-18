@@ -1,4 +1,5 @@
 ﻿using FitLink.Dtos.Train;
+using FitLink.Exceptions.Train;
 using FitLink.Exceptions.User;
 using FitLink.Models;
 using FitLink.Repository.Client;
@@ -51,6 +52,35 @@ namespace FitLink.Services.Train
                 exercises);
 
             await _trainRepository.InsertDocumentAsync(train);
+        }
+
+        public async Task<ResponseTrainDto> GetTrainById(string trainId)
+        {
+            var train = await _trainRepository.GetDocumentByIdAsync(trainId);
+
+            if (train is null)
+                throw new TrainNotFoundException();
+
+            var trainResponse = new ResponseTrainDto
+            (
+                train.Id,
+                train.Name,
+                train.ClientId,
+                train.PersonalId,
+                train.Exercises.Select(e => new ResponseExerciseDto
+                (
+                    e.Name,
+                    e.Instructions,
+                    e.Sets.Select(s => new ResponseSetDto
+                    (
+                        s.Number,
+                        s.NumberOfRepetitions,
+                        s.Weight
+                    )).ToList()
+                )).ToList()
+            );
+
+            return trainResponse;
         }
     }
 }
