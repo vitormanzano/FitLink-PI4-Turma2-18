@@ -9,6 +9,7 @@ namespace FitLink.Repository.Client
     {
         Task<ClientModel> GetClientByEmailAsync(string email);
         Task<IEnumerable<ClientModel>> GetClientsByCity(string city);
+        Task<IEnumerable<ClientModel>> GetClientsByPersonalId(string personalId);
         Task LinkClientToPersonal(Expression<Func<ClientModel, bool>> filterExpression, UpdateDefinition<ClientModel> update);
         Task CloseLinkWithPersonal(Expression<Func<ClientModel, bool>> filterExpression, UpdateDefinition<ClientModel> update);
     }

@@ -25,6 +25,14 @@ namespace FitLink.Repository.Client
                 .ToListAsync();
         }
 
+
+        public async Task<IEnumerable<ClientModel>> GetClientsByPersonalId(string personalId)
+        {
+            var filter = Builders<ClientModel>.Filter.Eq(p => p.PersonalId, personalId);
+            return await _collection.Find(filter)
+                .ToListAsync();
+        }
+
         public async Task LinkClientToPersonal(Expression<Func<ClientModel, bool>> filterExpression, UpdateDefinition<ClientModel> update)
         {
             await _collection.UpdateOneAsync(filterExpression, update);
@@ -34,6 +42,5 @@ namespace FitLink.Repository.Client
         {
             await _collection.UpdateOneAsync(filterExpression, update);
         }
-
     }
 }
