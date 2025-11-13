@@ -90,6 +90,30 @@ namespace FitLink.Services.Client
             return clientsResponseDto;
         }
 
+
+        public async Task<IEnumerable<ClientResponseDto>> GetClientsByPersonalId(string personalId)
+        {
+            var personal = _personalRepository.GetDocumentByIdAsync(personalId);
+
+            if (personal == null)
+                throw new UserNotFoundException("Personal não encontrado!");
+
+            var clients = await _clientRepository.GetClientsByPersonalId(personalId);
+
+            if (clients.Count() == 0)
+                throw new UserNotFoundException("Nenhum aluno encontrado!");
+
+            var clientsResponseDto = clients.Select(client => new ClientResponseDto(
+                client.Id,
+                client.Name,
+                client.Email,
+                client.Phone,
+                client.City
+            ));
+
+            return clientsResponseDto;
+        }
+
         public async Task<ClientResponseDto> Update(string id, UpdateClientDto updateClientDto)
         {
             var client = await _clientRepository.GetDocumentByIdAsync(id);

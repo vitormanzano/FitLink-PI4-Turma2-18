@@ -86,6 +86,25 @@ namespace FitLink.Controllers
             }
         }
 
+        [HttpGet("GetClientsByPersonalTrainer/{personalTrainerId}")]
+        public async Task<IActionResult> GetClientsByPersonalTrainer([FromRoute] string personalTrainerId)
+        {
+            try
+            {
+                var usersWithPersonal = await _clientService.GetClientsByPersonalId(personalTrainerId);
+                return Ok(usersWithPersonal);
+            }
+            catch (Exception ex)
+            {
+
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
+            }
+        }
+
         [HttpPatch("update/{id}")]
         public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UpdateClientDto updateClientDto)
         {

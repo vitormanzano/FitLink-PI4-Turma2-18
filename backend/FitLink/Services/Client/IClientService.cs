@@ -8,6 +8,7 @@ namespace FitLink.Services.Client
         Task<ClientResponseDto> Login(LoginClientDto loginClientDto);
         Task<ClientResponseDto> GetClientById(string id);
         Task<IEnumerable<ClientResponseDto>> GetClientsByCity(string city);
+        Task<IEnumerable<ClientResponseDto>> GetClientsByPersonalId(string personalId);
         Task<ClientResponseDto> Update(string id, UpdateClientDto updateClientDto);
         Task Delete(string id);
         Task LinkClientToPersonal(string clientId, string personalTrainerId);
