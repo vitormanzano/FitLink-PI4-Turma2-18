@@ -29,5 +29,11 @@ namespace FitLink.Repository.Client
         {
             await _collection.UpdateOneAsync(filterExpression, update);
         }
+
+        public async Task CloseLinkWithPersonal(Expression<Func<ClientModel, bool>> filterExpression, UpdateDefinition<ClientModel> update)
+        {
+            await _collection.UpdateOneAsync(filterExpression, update);
+        }
+
     }
 }

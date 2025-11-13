@@ -144,5 +144,17 @@ namespace FitLink.Services.Client
                 u => u.Id.ToString() == (clientId),
                 Builders<ClientModel>.Update.Set(u => u.PersonalId, personalTrainerId));
         }
+
+        public async Task CloseLinkWithPersonal(string clientId)
+        {
+            var client = _clientRepository.GetDocumentByIdAsync(clientId);
+
+            if (client is null)
+                throw new UserNotFoundException();
+
+            await _clientRepository.UpdateDocumentAsync(
+                u => u.Id.ToString() == (clientId),
+                Builders<ClientModel>.Update.Set(u => u.PersonalId, null));
+        }
     }
 }
