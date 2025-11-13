@@ -7,7 +7,8 @@ namespace FitLink.Services.Train
         Task<ResponseTrainDto> Register(RegisterTrainDto registerTrainDto);
         Task<ResponseTrainDto> GetTrainById(string trainId);
         Task<ResponseTrainDto> GetTrainByClientId(string clientId);
-        Task DeleteTrainById(string trainId);
         Task<List<ResponseTrainDto>> GetTrainsByPersonalId(string personalId);
+        Task<ResponseTrainDto> UpdateTrainById(string trainId, UpdateTrainDto updateTrainDto);
+        Task DeleteTrainById(string trainId);
     }
 }

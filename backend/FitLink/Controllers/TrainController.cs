@@ -72,24 +72,6 @@ namespace FitLink.Controllers
             }
         }
 
-        [HttpDelete("DeleteById/{trainId}")]
-        public async Task<IActionResult> DeleteById([FromRoute] string trainId)
-        {
-            try
-            {
-                await _trainService.DeleteTrainById(trainId);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return ex switch
-                {
-                    TrainNotFoundException => NotFound(ex.Message),
-                    _ => BadRequest(ex),
-                };
-            }
-        }
-
         [HttpGet("GetTrainsByPersonalId/{personalId}")]
         public async Task<IActionResult> GetTrainsByPersonalId([FromRoute] string personalId)
         {
@@ -103,6 +85,43 @@ namespace FitLink.Controllers
                 return ex switch
                 {
                     UserNotFoundException => NotFound(ex.Message),
+                    TrainNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex),
+                };
+            }
+        }
+
+        [HttpPatch("Update/{trainId}")]
+        public async Task<IActionResult> Update([FromRoute] string trainId, [FromBody] UpdateTrainDto updateTrainDto)
+        {
+            try
+            {
+                var updatedTrain = await _trainService.UpdateTrainById(trainId, updateTrainDto);
+                return Ok(updatedTrain);
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    TrainNotFoundException => NotFound(ex.Message),
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex),
+                };
+            }
+        }
+
+        [HttpDelete("DeleteById/{trainId}")]
+        public async Task<IActionResult> DeleteById([FromRoute] string trainId)
+        {
+            try
+            {
+                await _trainService.DeleteTrainById(trainId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
                     TrainNotFoundException => NotFound(ex.Message),
                     _ => BadRequest(ex),
                 };
