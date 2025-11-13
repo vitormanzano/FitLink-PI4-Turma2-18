@@ -56,5 +56,4 @@ public class CpfValidator {
             return(false);
         }
     }
-    }
 }
