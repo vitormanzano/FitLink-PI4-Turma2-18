@@ -32,7 +32,8 @@ public class CpfValidator {
             r = 11 - (sm % 11);
             if ((r == 10) || (r == 11))
                 dig10 = '0';
-            else dig10 = (char)(r + 48); // converte no respectivo caractere numerico
+            else
+                dig10 = (char)(r + 48); // converte no respectivo caractere numerico
 
             // Calculo do 2o. Digito Verificador
             sm = 0;
@@ -46,12 +47,14 @@ public class CpfValidator {
             r = 11 - (sm % 11);
             if ((r == 10) || (r == 11))
                 dig11 = '0';
-            else dig11 = (char)(r + 48);
+            else
+                dig11 = (char)(r + 48);
 
             // Verifica se os digitos calculados conferem com os digitos informados.
             if ((dig10 == cpf.charAt(9)) && (dig11 == cpf.charAt(10)))
                 return(true);
-            else return(false);
+            else
+                return(false);
         } catch (InputMismatchException erro) {
             return(false);
         }
