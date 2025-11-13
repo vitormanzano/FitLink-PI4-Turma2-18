@@ -11,5 +11,6 @@ namespace FitLink.Services.Client
         Task<ClientResponseDto> Update(string id, UpdateClientDto updateClientDto);
         Task Delete(string id);
         Task LinkClientToPersonal(string clientId, string personalTrainerId);
+        Task CloseLinkWithPersonal(string clientId);
     }
 }

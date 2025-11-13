@@ -139,5 +139,23 @@ namespace FitLink.Controllers
                 };
             }
         }
+
+        [HttpPatch("closeLinkWithPersonal/{clientId}")]
+        public async Task<IActionResult> CloseLinkWithPersonal([FromRoute] string clientId)
+        {
+            try
+            {
+                await _clientService.CloseLinkWithPersonal(clientId);
+                return Ok("Vínculo com o personal trainer encerrado com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
+            }
+        }
     }
 }
