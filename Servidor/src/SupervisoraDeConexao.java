@@ -1,4 +1,4 @@
-import validacoes.ValidadorEmail;
+import validacoes.EmailValidator;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -40,7 +40,7 @@ public class SupervisoraDeConexao extends Thread {
                 PrintWriter escritor = new PrintWriter(this.conexao.getOutputStream(), true);
 
                 String email = primeiraLinha.substring("VALIDAR_EMAIL:".length()).trim();
-                boolean valido = ValidadorEmail.validar(email);
+                boolean valido = EmailValidator.validar(email);
                 escritor.println(valido ? "OK" : "ERRO");
 
                 System.out.println("Cliente Android → " + email + " → " + (valido ? "OK" : "ERRO"));
@@ -66,7 +66,7 @@ public class SupervisoraDeConexao extends Thread {
                     PedidoDeOperacao pedido = (PedidoDeOperacao) comunicado;
                     switch (pedido.getOperacao()) {
                         case "ValidarEmail":
-                            boolean isValid = ValidadorEmail.validar(pedido.getValor());
+                            boolean isValid = EmailValidator.validar(pedido.getValor());
                             this.usuario.receba(new Resultado(isValid));
                             break;
                         default:
