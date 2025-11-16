@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-import validacoes.ValidadorEmail;
+import validacoes.EmailValidator;
 
 public class Servidor {
     public static String PORTA_PADRAO = "3000";
@@ -70,7 +70,7 @@ public class Servidor {
                     continue;
                 }
 
-                boolean valido = ValidadorEmail.validar(email);
+                boolean valido = EmailValidator.validar(email);
                 if (valido)
                     System.out.println("Email válido!");
                 else
