@@ -11,7 +11,7 @@ public class SignUpClientValidator {
         if (!result.isValid())
             return result;
 
-        result = EmailValidator.Validate(email);
+        result = EmailValidator.validate(email);
         if (!result.isValid())
             return result;
 
@@ -57,9 +57,9 @@ public class SignUpClientValidator {
     private static ValidationResult validateCity(String city) {
         if (city == null || city.isEmpty())
             return new ValidationResult(false, "Cidade ausente!");
-        if (StringValidator.ValidateIfLessThan(city, 2))
+        if (StringValidator.validateIfLessThan(city, 2))
             return new ValidationResult(false, "Cidade deve ter mis de 2 caracteres");
-        if (StringValidator.ValidateIfGreaterThan(city, 255))
+        if (StringValidator.validateIfGreaterThan(city, 255))
             return new ValidationResult(false, "Cidade deve ter menos de 255 caracteres!");
 
         return new ValidationResult(true, "");

@@ -10,10 +10,10 @@ public class EmailValidator {
 
     private static final Pattern pattern = Pattern.compile(EMAIL_PATTERN, Pattern.CASE_INSENSITIVE);
 
-    public static ValidationResult Validate(String email) {
-        if (StringValidator.ValidateIfLessThan(email, 4))
+    public static ValidationResult validate(String email) {
+        if (StringValidator.validateIfLessThan(email, 4))
             return new ValidationResult(false, "Email precisa ter no mínimo 4 caracteres!");
-        if (StringValidator.ValidateIfGreaterThan(email, 255))
+        if (StringValidator.validateIfGreaterThan(email, 255))
             return new ValidationResult(false, "Email deve ter menos de 255 caracteres!");
 
         Matcher matcher = pattern.matcher(email);
