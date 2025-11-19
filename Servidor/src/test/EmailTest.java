@@ -60,13 +60,14 @@ public class EmailTest {
     }
 
     // 06
+    // Email passa, mas para no mal formatado
     @Test
-    void shouldNotAllowEmailWith254Characters() { //
+    void shouldAllowEmailWith254Characters() {
         String email = "a".repeat(254);
         ValidationResult result = EmailValidator.validate(email);
 
         assertEquals(false, result.isValid());
-        assertEquals("Email deve ter menos de 255 caracteres!", result.getMessage());
+        assertEquals("Email mal formatado!", result.getMessage());
     }
 
     //07
