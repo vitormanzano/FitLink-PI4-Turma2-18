@@ -72,7 +72,7 @@ namespace FitLink.Controllers
             }
         }
 
-        [HttpGet("GetByCity/{city}")]
+        [HttpGet("getByCity/{city}")]
         public async Task<IActionResult> GetUsersByCity([FromRoute] string city)
         {
             try
@@ -86,7 +86,7 @@ namespace FitLink.Controllers
             }
         }
 
-        [HttpGet("GetClientsByPersonalTrainer/{personalTrainerId}")]
+        [HttpGet("getClientsByPersonalTrainer/{personalTrainerId}")]
         public async Task<IActionResult> GetClientsByPersonalTrainer([FromRoute] string personalTrainerId)
         {
             try

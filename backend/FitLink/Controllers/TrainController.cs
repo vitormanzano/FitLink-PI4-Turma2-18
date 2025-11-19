@@ -17,7 +17,7 @@ namespace FitLink.Controllers
             _trainService = trainService;
         }
 
-        [HttpPost("Register")]
+        [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterTrainDto registerTrainDto)
         {
             try
@@ -35,7 +35,7 @@ namespace FitLink.Controllers
             }
         }
 
-        [HttpGet("GetById/{trainId}")]
+        [HttpGet("getById/{trainId}")]
         public async Task<IActionResult> GetById([FromRoute] string trainId)
         {
             try
@@ -53,7 +53,7 @@ namespace FitLink.Controllers
             }
         }
 
-        [HttpGet("GetByClientId/{clientId}")]
+        [HttpGet("getByClientId/{clientId}")]
         public async Task<IActionResult> GetByClientId([FromRoute] string clientId)
         {
             try
@@ -72,7 +72,7 @@ namespace FitLink.Controllers
             }
         }
 
-        [HttpGet("GetTrainsByPersonalId/{personalId}")]
+        [HttpGet("getTrainsByPersonalId/{personalId}")]
         public async Task<IActionResult> GetTrainsByPersonalId([FromRoute] string personalId)
         {
             try
@@ -91,7 +91,7 @@ namespace FitLink.Controllers
             }
         }
 
-        [HttpPatch("Update/{trainId}")]
+        [HttpPatch("update/{trainId}")]
         public async Task<IActionResult> Update([FromRoute] string trainId, [FromBody] UpdateTrainDto updateTrainDto)
         {
             try
@@ -110,7 +110,7 @@ namespace FitLink.Controllers
             }
         }
 
-        [HttpDelete("DeleteById/{trainId}")]
+        [HttpDelete("deleteById/{trainId}")]
         public async Task<IActionResult> DeleteById([FromRoute] string trainId)
         {
             try
