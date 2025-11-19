@@ -70,8 +70,8 @@ public class Servidor {
                     continue;
                 }
 
-                boolean valido = EmailValidator.validar(email);
-                if (valido)
+                var valido = EmailValidator.validate(email);
+                if (valido.isValid())
                     System.out.println("Email válido!");
                 else
                     System.out.println("Email inválido!");
