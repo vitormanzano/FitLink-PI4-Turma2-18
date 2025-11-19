@@ -76,16 +76,16 @@ EndPoints:
 ### Aluno 
 Client significa aluno
 
-| Método   | Endpoint                                              | Descrição                                   |
-| ------   | ----------------------------------------------------- | --------------------------------------------|
-| `POST `  | `/Client/register`                                    | Realiza login do aluno                      |
-| `POST`   | `/Client/login`                                       | Cadastra um novo aluno                      |
-| `GET`    | `/Client/getById/{id}`                                | Busca um aluno por ID                       |
-| `GET`    | `/Client/getByCity/{city}`                            | Busca alunos por cidade                   | 
-| `PATCH`  | `/Client/update/{id}`                                 | Atualiza os dados de um aluno               |
-| `DELETE` | `/Client/delete/{id}`                                 | Deleta o registro de um aluno               |
-| `PATCH`  | `/Client/linkToPersonal/{userId}/{personalTrainerId}` | Faz o vínculo entre um aluno e um personal  |                                         
-|          |                                                       |                                             |
+| Método   | Endpoint                                                | Descrição                                    |
+| ------   | ------------------------------------------------------- | -------------------------------------------- |
+| `POST `  | `/Client/register`                                      | Realiza login do aluno                       |
+| `POST`   | `/Client/login`                                         | Cadastra um novo aluno                       |
+| `GET`    | `/Client/getById/{id}`                                  | Busca um aluno por ID                        |
+| `GET`    | `/Client/getByCity/{city}`                              | Busca alunos por cidade                      | 
+| `PATCH`  | `/Client/update/{id}`                                   | Atualiza os dados de um aluno                |
+| `DELETE` | `/Client/delete/{id}`                                   | Deleta o registro de um aluno                |
+| `PATCH`  | `/Client/linkToPersonal/{clientId}/{personalTrainerId}` | Faz o vínculo entre um aluno e um personal   |                                         
+| `PATCH`  | `/Client/closeLinkWithPersonal/{clientId}`              | Fecha o vínculo entre um aluno e um personal |            
 
 ### Personal 
 
@@ -98,6 +98,17 @@ Client significa aluno
 | `PATCH`  | `/Personal/update/{id}`                                 | Atualiza os dados de um personal            |
 | `DELETE` | `/Personal/delete/{id}`                                 | Deleta o registro de um personal            |
 |          |                                                         |                                             |
+
+### Treino 
+
+| Método   | Endpoint                                                | Descrição                                   |
+| ------   | --------------------------------------------------------| --------------------------------------------|
+| `POST `  | `/Train/register`                                       | Realiza o registro de um treino             |
+| `GET`    | `/Train/getById/{id}`                                   | Busca um treino por ID                      |
+| `GET`    | `/Train/getByClientId/{clientId}`                       | Busca um treino pelo id do aluno            | 
+| `PATCH`  | `/Train/getTrainsByPersonalId/{personalId}`             | Busca os treinos de um personal             |
+| `PATCH`  | `/Train/update/{trainId}`                               | Atualiza os dados de um treino              |
+| `DELETE` | `/Train/delete/{trainId}`                               | Deleta o registro de um treino              |
 
 ## Processo
 O processo escolhido foi o de cadastro de aluno, criar uma conta para um aluno.
