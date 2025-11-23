@@ -176,5 +176,23 @@ namespace FitLink.Controllers
                 };
             }
         }
+
+        [HttpPatch("AddInformations/{clientId}")]
+        public async Task<IActionResult> AddInformations([FromRoute] string clientId, [FromBody] MoreInformations informations)
+        {
+            try
+            {
+                await _clientService.AddInformations(clientId, informations);
+                return Ok("Informações adicionada com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
+            }
+        }
     }
 }

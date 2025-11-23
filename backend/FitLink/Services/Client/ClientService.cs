@@ -51,7 +51,11 @@ namespace FitLink.Services.Client
                 client.Name, 
                 client.Email, 
                 client.Phone, 
-                client.City);
+                client.City,
+                client.AboutMe,
+                client.Goals,
+                client.Metrics
+            );
         }
 
         public async Task<ClientResponseDto> GetClientById(string id)
@@ -66,7 +70,10 @@ namespace FitLink.Services.Client
                 client.Name,
                 client.Email,
                 client.Phone,
-                client.City
+                client.City,
+                client.AboutMe,
+                client.Goals,
+                client.Metrics
             );
 
             return clientResponseDto;
@@ -84,7 +91,10 @@ namespace FitLink.Services.Client
                 client.Name,
                 client.Email,
                 client.Phone,
-                client.City
+                client.City,
+                client.AboutMe,
+                client.Goals,
+                client.Metrics
             ));
 
             return clientsResponseDto;
@@ -108,7 +118,10 @@ namespace FitLink.Services.Client
                 client.Name,
                 client.Email,
                 client.Phone,
-                client.City
+                client.City,
+                client.AboutMe,
+                client.Goals,
+                client.Metrics
             ));
 
             return clientsResponseDto;
@@ -136,7 +149,10 @@ namespace FitLink.Services.Client
                 updateClientDto.Name,
                 updateClientDto.Email,
                 updateClientDto.Phone,
-                updateClientDto.City
+                updateClientDto.City,
+                updateClientDto.AboutMe,
+                updateClientDto.Goals,
+                updateClientDto.Metrics
             );
 
             return clientResponse;
@@ -171,7 +187,7 @@ namespace FitLink.Services.Client
 
         public async Task CloseLinkWithPersonal(string clientId)
         {
-            var client = _clientRepository.GetDocumentByIdAsync(clientId);
+            var client = await _clientRepository.GetDocumentByIdAsync(clientId);
 
             if (client is null)
                 throw new UserNotFoundException();
@@ -179,6 +195,21 @@ namespace FitLink.Services.Client
             await _clientRepository.UpdateDocumentAsync(
                 u => u.Id.ToString() == (clientId),
                 Builders<ClientModel>.Update.Set(u => u.PersonalId, null));
+        }
+
+        public async Task AddInformations(string clientId, MoreInformations moreInformations)
+        {
+            var client = await _clientRepository.GetDocumentByIdAsync(clientId);
+
+            if (client is null)
+                throw new UserNotFoundException();
+
+            await _clientRepository.UpdateDocumentAsync(
+                u => u.Id.ToString() == (clientId),
+                Builders<ClientModel>.Update
+                    .Set(u => u.AboutMe, moreInformations.AboutMe)
+                    .Set(u => u.Goals, moreInformations.Goals)
+                    .Set(u => u.Metrics, moreInformations.Metrics));
         }
     }
 }
