@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
                         composable("home") {
                             MyWorkoutsScreen(
                                 vm = vm,
-                                onFindPersonal = { navController.navigate("home") }
+                                onFindPersonal = { navController.navigate("search") }
                             )
                         }
 

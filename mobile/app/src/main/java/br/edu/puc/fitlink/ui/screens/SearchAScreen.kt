@@ -75,6 +75,22 @@ fun SearchAScreen(
         Spacer(Modifier.height(16.dp))
 
         when {
+            searchCidade.isBlank() -> {
+                // Cidade ainda não selecionada
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Text(
+                        "Selecione uma cidade para começar.",
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
             vm.isLoading -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
