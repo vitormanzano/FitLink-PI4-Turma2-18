@@ -19,42 +19,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import br.edu.puc.fitlink.R
 import br.edu.puc.fitlink.ui.components.CircleAvatarPlaceholder
 import br.edu.puc.fitlink.ui.theme.FitBlack
 import br.edu.puc.fitlink.ui.theme.FitYellow
 
 @Composable
-fun EditProfileScreen(
-    avatarRes: Int? = null,
-    nomeInicial: String,
-    bioInicial: String,
-    objetivoInicial: String,
-    objetivoDescricaoInicial: String,
-    alturaInicial: Double,
-    pesoInicial: Double,
+fun EditProfileScreen(onBack: () -> Unit) {
+    // Dados fixos para teste
+    var nome by remember { mutableStateOf("Gabriel Adorno") }
+    var bio by remember { mutableStateOf("Sou estudante de Engenharia de Software e apaixonado por academia e tecnologia.") }
+    var altura by remember { mutableStateOf("1.83") }
+    var peso by remember { mutableStateOf("80.0") }
 
-    onSave: (
-        nome: String,
-        bio: String,
-        objetivo: String,
-        objetivoDescricao: String,
-        altura: Double,
-        peso: Double
-    ) -> Unit,
-    onBack: () -> Unit
-) {
-    // Estados locais editáveis
-    var nome by remember { mutableStateOf(nomeInicial) }
-    var bio by remember { mutableStateOf(bioInicial) }
-    var altura by remember { mutableStateOf(alturaInicial.toString()) }
-    var peso by remember { mutableStateOf(pesoInicial.toString()) }
-
-    // Dropdown estados
     val objetivos = listOf("Hipertrofia", "Emagrecimento", "Condicionamento", "Resistência", "Mobilidade")
-    var objetivo by remember { mutableStateOf(objetivoInicial) }
+    var objetivo by remember { mutableStateOf("Hipertrofia") }
     var expanded by remember { mutableStateOf(false) }
-
-    var objetivoDescricao by remember { mutableStateOf(objetivoDescricaoInicial) }
+    var objetivoDescricao by remember { mutableStateOf("Ganhar massa muscular e força com acompanhamento personalizado.") }
 
     Scaffold(
         topBar = {
@@ -65,7 +46,7 @@ fun EditProfileScreen(
                     .background(FitYellow)
             ) {
                 IconButton(
-                    onClick = onBack,
+                    onClick = { onBack() },
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .padding(start = 12.dp)
@@ -93,33 +74,23 @@ fun EditProfileScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // Avatar
-            if (avatarRes != null) {
-                Image(
-                    painter = painterResource(avatarRes),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(110.dp)
-                        .clip(CircleShape)
-                )
-            } else {
-                CircleAvatarPlaceholder()
-            }
+            // Avatar fixo (ic_male)
+            Image(
+                painter = painterResource(R.drawable.ic_male),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(110.dp)
+                    .clip(CircleShape)
+            )
 
             Spacer(Modifier.height(24.dp))
 
-            // CAMPOS DE TEXTO
+            // Campos de texto
             OutlinedTextField(
                 value = nome,
                 onValueChange = { nome = it },
-                label = {
-                    Text(
-                        text = "Nome",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                },
+                label = { Text("Nome", fontWeight = FontWeight.Bold) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -128,20 +99,14 @@ fun EditProfileScreen(
             OutlinedTextField(
                 value = bio,
                 onValueChange = { bio = it },
-                label = {
-                    Text(
-                        text = "Bio",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                },
+                label = { Text("Bio", fontWeight = FontWeight.Bold) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 2
             )
 
             Spacer(Modifier.height(24.dp))
 
-            // DROPDOWN DO OBJETIVO
+            // Dropdown
             Text(
                 "Objetivo",
                 fontWeight = FontWeight.ExtraBold,
@@ -181,48 +146,27 @@ fun EditProfileScreen(
             OutlinedTextField(
                 value = objetivoDescricao,
                 onValueChange = { objetivoDescricao = it },
-                label = {
-                    Text(
-                        text = "Descrição do Objetivo",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                },
+                label = { Text("Descrição do Objetivo", fontWeight = FontWeight.Bold) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 2
             )
 
             Spacer(Modifier.height(24.dp))
 
-            // Medidas
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-
                 OutlinedTextField(
                     value = altura,
                     onValueChange = { altura = it },
-                    label = {
-                        Text(
-                            text = "Altura",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                    },
+                    label = { Text("Altura", fontWeight = FontWeight.Bold) },
                     modifier = Modifier.weight(1f)
                 )
-
                 OutlinedTextField(
                     value = peso,
                     onValueChange = { peso = it },
-                    label = {
-                        Text(
-                            text = "Peso",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                    },
+                    label = { Text("Peso", fontWeight = FontWeight.Bold) },
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -230,16 +174,7 @@ fun EditProfileScreen(
             Spacer(Modifier.height(32.dp))
 
             Button(
-                onClick = {
-                    onSave(
-                        nome,
-                        bio,
-                        objetivo,
-                        objetivoDescricao,
-                        altura.toDoubleOrNull() ?: 0.0,
-                        peso.toDoubleOrNull() ?: 0.0
-                    )
-                },
+                onClick = { /* ação de salvar */ },
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = FitYellow),
                 modifier = Modifier
@@ -249,24 +184,5 @@ fun EditProfileScreen(
                 Text("Salvar", color = FitBlack, fontWeight = FontWeight.SemiBold)
             }
         }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun EditProfileScreenPreview() {
-    MaterialTheme {
-        EditProfileScreen(
-            avatarRes = null,          // ou algum drawable, ex: R.drawable.user
-            nomeInicial = "Biel",
-            bioInicial = "Sou o Biel e gosto de academia.",
-            objetivoInicial = "Hipertrofia",
-            objetivoDescricaoInicial = "Aumentar massa muscular com treino intenso.",
-            alturaInicial = 1.83,
-            pesoInicial = 80.0,
-            onSave = { _, _, _, _, _, _ -> },
-            onBack = {}
-        )
     }
 }

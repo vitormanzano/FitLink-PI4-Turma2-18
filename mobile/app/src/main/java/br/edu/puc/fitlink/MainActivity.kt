@@ -21,13 +21,16 @@ import androidx.navigation.navArgument
 import br.edu.puc.fitlink.ui.components.BottomBar
 import br.edu.puc.fitlink.ui.components.BottomBarPersonal
 import br.edu.puc.fitlink.ui.screens.AppViewModel
+import br.edu.puc.fitlink.ui.screens.EditProfileScreen
 import br.edu.puc.fitlink.ui.screens.FirstTimeScreen
 import br.edu.puc.fitlink.ui.screens.LoginScreen
+import br.edu.puc.fitlink.ui.screens.MyStudentsScreen
 import br.edu.puc.fitlink.ui.screens.MyWorkoutsScreen
 import br.edu.puc.fitlink.ui.screens.NewStudentsScreen
 import br.edu.puc.fitlink.ui.screens.PersonalDetailScreen
 import br.edu.puc.fitlink.ui.screens.SearchAScreen
 import br.edu.puc.fitlink.ui.screens.SignUpScreen
+import br.edu.puc.fitlink.ui.screens.UserProfileScreen
 import br.edu.puc.fitlink.ui.theme.FitTheme
 
 class MainActivity : ComponentActivity() {
@@ -83,7 +86,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "firstTime",
+                        startDestination = "profile",
                         modifier = Modifier.fillMaxSize()
                     ) {
                         composable("firstTime") {
@@ -133,10 +136,14 @@ class MainActivity : ComponentActivity() {
 
                         // PERFIL (compartilhado)
                         composable("profile") {
-                            // TODO: implementar tela de perfil
+                            UserProfileScreen(navController)
                         }
 
-                        // DETALHE DO PERSONAL (com ID na rota)
+                        composable("editProfile") {
+                            EditProfileScreen(onBack = { navController.popBackStack() })
+                        }
+
+                        // DETALHE DO PERSONAL (com ID na rota)\
                         composable(
                             route = "personalDetail/{personalId}",
                             arguments = listOf(
@@ -159,7 +166,7 @@ class MainActivity : ComponentActivity() {
 
                         // PERSONAL - MEUS ALUNOS
                         composable("myStudents") {
-                            // TODO: implementar tela de Meus Alunos
+                            MyStudentsScreen()
                         }
                     }
                 }
