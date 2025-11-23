@@ -51,7 +51,11 @@ namespace FitLink.Services.Client
                 client.Name, 
                 client.Email, 
                 client.Phone, 
-                client.City);
+                client.City,
+                client.AboutMe,
+                client.Goals,
+                client.Metrics
+            );
         }
 
         public async Task<ClientResponseDto> GetClientById(string id)
@@ -66,7 +70,10 @@ namespace FitLink.Services.Client
                 client.Name,
                 client.Email,
                 client.Phone,
-                client.City
+                client.City,
+                client.AboutMe,
+                client.Goals,
+                client.Metrics
             );
 
             return clientResponseDto;
@@ -84,7 +91,10 @@ namespace FitLink.Services.Client
                 client.Name,
                 client.Email,
                 client.Phone,
-                client.City
+                client.City,
+                client.AboutMe,
+                client.Goals,
+                client.Metrics
             ));
 
             return clientsResponseDto;
@@ -108,7 +118,10 @@ namespace FitLink.Services.Client
                 client.Name,
                 client.Email,
                 client.Phone,
-                client.City
+                client.City,
+                client.AboutMe,
+                client.Goals,
+                client.Metrics
             ));
 
             return clientsResponseDto;
@@ -136,7 +149,10 @@ namespace FitLink.Services.Client
                 updateClientDto.Name,
                 updateClientDto.Email,
                 updateClientDto.Phone,
-                updateClientDto.City
+                updateClientDto.City,
+                updateClientDto.AboutMe,
+                updateClientDto.Goals,
+                updateClientDto.Metrics
             );
 
             return clientResponse;

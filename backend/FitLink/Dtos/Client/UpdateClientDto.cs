@@ -1,10 +1,15 @@
-﻿namespace FitLink.Dtos.Client
+﻿using FitLink.Models;
+
+namespace FitLink.Dtos.Client
 {
     public record UpdateClientDto(
         string Name,
         string Email,
         string Password,
         string Phone,
-        string City);
+        string City,
+        string AboutMe,
+        string Goals,
+        MetricsModel Metrics);
     
 }

@@ -18,7 +18,7 @@ namespace FitLink.Models
         [BsonRepresentation(BsonType.String)]
         public string? AboutMe { get; set; }
         public string? Goals { get; set; }
-        public string? Metrics { get; set; }
+        public MetricsModel? Metrics { get; set; }
         public string? PersonalId { get; private set; }
 
         public ClientModel() { } // Construtor vazio necessário para o MongoDB

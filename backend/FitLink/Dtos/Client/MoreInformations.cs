@@ -1,8 +1,10 @@
-﻿namespace FitLink.Dtos.Client
+﻿using FitLink.Models;
+
+namespace FitLink.Dtos.Client
 {
     public record MoreInformations(
         string? AboutMe,
         string? Goals,
-        string? Metrics
+        MetricsModel? Metrics
     );
 }
