@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable("search") { SearchAScreen(navController = navController) }
+                        composable("search") { SearchAScreen() }
                         composable("profile") { }
 
                         composable("personalDetail") {

@@ -7,6 +7,7 @@ import br.edu.puc.fitlink.data.remote.ApiClient
 import br.edu.puc.fitlink.data.model.ResponseTrainDto
 import kotlinx.coroutines.launch
 import android.util.Log
+import br.edu.puc.fitlink.data.model.PersonalResponseDto
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -86,6 +87,51 @@ class AppViewModel : ViewModel() {
         }
     }
 }
+
+
+class SearchViewModel : ViewModel() {
+
+    var searchResults by mutableStateOf<List<PersonalResponseDto>>(emptyList())
+        private set
+
+    var isLoading by mutableStateOf(false)
+        private set
+
+    var errorMessage by mutableStateOf<String?>(null)
+        private set
+
+    fun searchByCity(city: String) {
+        if (city.isBlank()) {
+            searchResults = emptyList()
+            return
+        }
+
+        viewModelScope.launch {
+            isLoading = true
+            errorMessage = null
+            try {
+                Log.d("SearchViewModel", "Buscando personais da cidade: $city")
+                val result = ApiClient.personalApi.getPersonalsByCity(city)
+                Log.d("SearchViewModel", "Recebidos ${result.size} personais")
+                searchResults = result
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("SearchViewModel", "Erro ao buscar personais", e)
+
+                searchResults = emptyList()
+
+                errorMessage = when (e) {
+                    is HttpException -> "Erro ${e.code()} ao buscar personais."
+                    is IOException -> "Falha de conexão com o servidor."
+                    else -> "Erro inesperado: ${e.message}"
+                }
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+}
+
 
 private fun ResponseTrainDto.toWorkoutGroup(): WorkoutGroup {
     val items = exercises.map { exercise ->

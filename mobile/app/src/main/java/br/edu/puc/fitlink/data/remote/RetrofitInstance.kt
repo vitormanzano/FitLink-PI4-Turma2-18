@@ -39,6 +39,11 @@ interface ClientApi {
 interface PersonalApi {
     @POST("Personal/register")
     suspend fun register(@Body dto: RegisterPersonalDto): Response<ResponseBody>
+
+    @GET("Personal/city/{city}")
+    suspend fun getPersonalsByCity(
+        @Path("city") city: String
+    ): List<PersonalResponseDto>
 }
 
 // ======== RETROFIT INSTANCE ========
