@@ -28,6 +28,8 @@ class AppViewModel : ViewModel() {
     var clientId by mutableStateOf<String?>(null)
         private set
 
+    var isProfessor by mutableStateOf(true)
+        private set
     var workoutGroups by mutableStateOf<List<WorkoutGroup>>(emptyList())
         private set
 
@@ -45,6 +47,10 @@ class AppViewModel : ViewModel() {
 
     fun updateClientId(id: String) {
         clientId = id
+    }
+
+    fun setIsProfessor(value: Boolean) {
+        isProfessor = value
     }
 
     fun connectPersonal() { hasPersonal = true }

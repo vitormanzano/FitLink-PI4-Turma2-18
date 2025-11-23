@@ -29,3 +29,27 @@ fun BottomBar(current: String, onNavigate: (String) -> Unit) {
         )
     }
 }
+
+@Composable
+fun BottomBarPersonal(current: String, onNavigate: (String) -> Unit) {
+    NavigationBar(containerColor = Color(0xFFFFC107)) {
+        NavigationBarItem(
+            selected = current == "newStudents",
+            onClick = { onNavigate("newStudents") },
+            icon = { Icon(Icons.Outlined.PersonPin, contentDescription = "newStudents", tint = Color.Black) },
+            label = { Text("Interessados", color = Color.Black) }
+        )
+        NavigationBarItem(
+            selected = current == "myStudents",
+            onClick = { onNavigate("myStudents") },
+            icon = { Icon(Icons.Outlined.School, contentDescription = "myStudents", tint = Color.Black) },
+            label = { Text("Meus alunos", color = Color.Black) }
+        )
+        NavigationBarItem(
+            selected = current == "profile",
+            onClick = { onNavigate("profile") },
+            icon = { Icon(Icons.Outlined.Person, contentDescription = "Perfil", tint = Color.Black) },
+            label = { Text("Perfil", color = Color.Black) }
+        )
+    }
+}

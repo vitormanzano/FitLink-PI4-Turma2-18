@@ -12,6 +12,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import br.edu.puc.fitlink.ui.components.BottomBar
+import br.edu.puc.fitlink.ui.components.BottomBarPersonal
 import br.edu.puc.fitlink.ui.screens.*
 import br.edu.puc.fitlink.ui.theme.FitTheme
 
@@ -23,8 +24,12 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val vm: AppViewModel = viewModel()
 
-                // Rotas que exibem BottomBar
-                val bottomRoutes = remember { setOf("home", "search", "progress", "profile") }
+
+                // Rotas do aluno
+                val bottomRoutesAluno = remember { setOf("home", "search", "profile") }
+                // Rotas do personal
+                val bottomRoutesPersonal = remember { setOf("newStudents", "myStudents", "profile") }
+
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
@@ -32,37 +37,63 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     containerColor = Color.White,
                     bottomBar = {
-                        if (currentRoute in bottomRoutes) {
-                            BottomBar(current = currentRoute ?: "home") { dest ->
-                                if (dest != currentRoute) {
-                                    navController.navigate(dest) {
-                                        popUpTo("home") { inclusive = false }
-                                        launchSingleTop = true
+                        when {
+                            vm.isProfessor && currentRoute in bottomRoutesPersonal -> {
+                                BottomBarPersonal(
+                                    current = currentRoute ?: "newStudents",
+                                    onNavigate = { dest ->
+                                        if (dest != currentRoute) {
+                                            navController.navigate(dest) {
+                                                popUpTo("newStudents") { inclusive = false }
+                                                launchSingleTop = true
+                                            }
+                                        }
                                     }
-                                }
+                                )
+                            }
+
+                            !vm.isProfessor && currentRoute in bottomRoutesAluno -> {
+                                BottomBar(
+                                    current = currentRoute ?: "home",
+                                    onNavigate = { dest ->
+                                        if (dest != currentRoute) {
+                                            navController.navigate(dest) {
+                                                popUpTo("home") { inclusive = false }
+                                                launchSingleTop = true
+                                            }
+                                        }
+                                    }
+                                )
                             }
                         }
                     }
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "firstTime",
+                        startDestination = "newStudents",
                         modifier = Modifier.fillMaxSize()
                     ) {
                         composable("firstTime") { FirstTimeScreen(navController) }
                         composable("login") {
                             LoginScreen(
                                 navController = navController,
-                                onLoginSuccess = { clientId ->
-                                    vm.updateClientId(clientId)      // salva o ID no AppViewModel
-                                    vm.connectPersonal()          // opcional: já marca que tem personal
+                                onLoginSuccess = { clientId, isProfessor ->
+                                    vm.updateClientId(clientId)
+                                    vm.setIsProfessor(isProfessor) // 👈 salva no ViewModel
 
-                                    navController.navigate("home") {
-                                        popUpTo("login") { inclusive = true }
+                                    if (isProfessor) {
+                                        navController.navigate("newStudents") {
+                                            popUpTo("login") { inclusive = true }
+                                        }
+                                    } else {
+                                        navController.navigate("home") {
+                                            popUpTo("login") { inclusive = true }
+                                        }
                                     }
                                 }
                             )
                         }
+
                         composable("signUp") { SignUpScreen(navController) }
 
                         composable("home") {
@@ -78,6 +109,8 @@ class MainActivity : ComponentActivity() {
                         composable("personalDetail") {
                             PersonalDetailScreen(onBack = { navController.popBackStack() })
                         }
+                        composable("newStudents") { NewStudentsScreen() }
+                        composable("myStudents") { }
 
 
                     }
