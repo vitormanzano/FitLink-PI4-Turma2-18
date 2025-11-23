@@ -28,6 +28,7 @@ import br.edu.puc.fitlink.ui.screens.MyStudentsScreen
 import br.edu.puc.fitlink.ui.screens.MyWorkoutsScreen
 import br.edu.puc.fitlink.ui.screens.NewStudentsScreen
 import br.edu.puc.fitlink.ui.screens.PersonalDetailScreen
+import br.edu.puc.fitlink.ui.screens.PersonalProfileContent
 import br.edu.puc.fitlink.ui.screens.SearchAScreen
 import br.edu.puc.fitlink.ui.screens.SignUpScreen
 import br.edu.puc.fitlink.ui.screens.StudentsDetailsScreen
@@ -45,7 +46,7 @@ class MainActivity : ComponentActivity() {
                 // Rotas do aluno
                 val bottomRoutesAluno = remember { setOf("home", "search", "profile") }
                 // Rotas do personal
-                val bottomRoutesPersonal = remember { setOf("newStudents", "myStudents", "profile", "studentsDetails") }
+                val bottomRoutesPersonal = remember { setOf("newStudents", "myStudents", "personalProfile", "studentsDetails") }
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -163,16 +164,21 @@ class MainActivity : ComponentActivity() {
                         // PERSONAL - NOVOS ALUNOS
                         composable("newStudents") {
                             NewStudentsScreen(onAlunoClick = { navController.navigate("studentsDetails")})
-                        }
+                        }-
 
                         // PERSONAL - MEUS ALUNOS
                         composable("myStudents") {
                             MyStudentsScreen( onAlunoClick = { navController.navigate("studentsDetails")} )
                         }
 
-                        // PERSONAL - MEUS ALUNOS
+                        // PERSONAL - DETALHES DO ALUNO
                         composable("studentsDetails") {
                             StudentsDetailsScreen(navController)
+                        }
+
+                        // PERSONAL - PERFIL
+                        composable("personalProfile") {
+                            PersonalProfileContent()
                         }
                     }
                 }

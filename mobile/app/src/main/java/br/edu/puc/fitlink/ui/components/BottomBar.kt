@@ -46,8 +46,8 @@ fun BottomBarPersonal(current: String, onNavigate: (String) -> Unit) {
             label = { Text("Meus alunos", color = Color.Black) }
         )
         NavigationBarItem(
-            selected = current == "profile",
-            onClick = { onNavigate("profile") },
+            selected = current == "personalProfile",
+            onClick = { onNavigate("personalProfile") },
             icon = { Icon(Icons.Outlined.Person, contentDescription = "Perfil", tint = Color.Black) },
             label = { Text("Perfil", color = Color.Black) }
         )

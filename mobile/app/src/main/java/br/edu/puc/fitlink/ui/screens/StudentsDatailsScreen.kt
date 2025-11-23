@@ -29,7 +29,7 @@ import br.edu.puc.fitlink.ui.theme.FitYellow
 
 @Composable
 fun StudentsDetailsScreen(navController: NavHostController) {
-    var isAluno = true;
+    var isAluno = false;
 
     val nome = "Gabriel Adorno"
     val bio = "Sou aluno dedicado, focado em melhorar minha saúde e desempenho físico. Tenho como meta alcançar a melhor versão de mim mesmo."
