@@ -16,7 +16,7 @@ public class CpfValidator {
             return new ValidationResult(false, "CPF apenas com números iguais!");
 
         if (!StringValidator.validateIfLengthEquals(cpf, 11))
-            return new ValidationResult(false, "CPF deve ter 11 caracteres!");
+            return new ValidationResult(false, "CPF deve ter 11 caracteres! Digite apenas números!");
 
         char dig10, dig11;
         int sm, i, r, num, peso;
