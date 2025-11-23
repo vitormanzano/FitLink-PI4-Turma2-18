@@ -1,5 +1,6 @@
 import validacoes.EmailValidator;
 import validacoes.SignUpClientValidator;
+import validacoes.SignUpPersonalValidator;
 import validacoes.ValidationResult;
 
 import java.io.*;
@@ -39,7 +40,10 @@ public class SupervisoraDeConexao extends Thread {
 
             this.conexao.setSoTimeout(0); // desativa timeout
 
-            
+            // =====================================================
+            // PROTOCOLO TEXTO: SIGNUP_CLIENT
+            // Formato: SIGNUP_CLIENT:nome;email;senha;telefone;cidade
+            // =====================================================
             if (primeiraLinha != null && primeiraLinha.startsWith("SIGNUP_CLIENT:")) {
                 PrintWriter escritor = new PrintWriter(this.conexao.getOutputStream(), true);
 
@@ -47,7 +51,7 @@ public class SupervisoraDeConexao extends Thread {
                 String[] partes = dados.split(";", -1);
 
                 if (partes.length < 5) {
-                    escritor.println("ERRO");
+                    escritor.println("ERRO:Dados insuficientes para cadastro de cliente");
                     this.conexao.close();
                     return;
                 }
@@ -67,9 +71,9 @@ public class SupervisoraDeConexao extends Thread {
                 );
 
                 if (result.isValid()) {
-                    escritor.println("OK"); // sem mensagem
+                    escritor.println("OK");
                 } else {
-                    escritor.println("ERRO:" + result.getMessage()); // ex: ERRO:Nome ausente!
+                    escritor.println("ERRO:" + result.getMessage());
                 }
 
                 System.out.println(
@@ -81,7 +85,58 @@ public class SupervisoraDeConexao extends Thread {
                 return;
             }
 
-        
+            // =====================================================
+            // PROTOCOLO TEXTO: SIGNUP_PERSONAL
+            // Formato: SIGNUP_PERSONAL:nome;email;senha;telefone;cidade;cpf;cref
+            // =====================================================
+            if (primeiraLinha != null && primeiraLinha.startsWith("SIGNUP_PERSONAL:")) {
+                PrintWriter escritor = new PrintWriter(this.conexao.getOutputStream(), true);
+
+                String dados = primeiraLinha.substring("SIGNUP_PERSONAL:".length()).trim();
+                String[] partes = dados.split(";", -1);
+
+                if (partes.length < 7) {
+                    escritor.println("ERRO:Dados insuficientes para cadastro de personal");
+                    this.conexao.close();
+                    return;
+                }
+
+                String name     = partes[0];
+                String email    = partes[1];
+                String password = partes[2];
+                String phone    = partes[3];
+                String city     = partes[4];
+                String cpf      = partes[5];
+                String cref     = partes[6];
+
+                ValidationResult result = SignUpPersonalValidator.validate(
+                    name,
+                    email,
+                    password,
+                    phone,
+                    city,
+                    cpf,
+                    cref
+                );
+
+                if (result.isValid()) {
+                    escritor.println("OK");
+                } else {
+                    escritor.println("ERRO:" + result.getMessage());
+                }
+
+                System.out.println(
+                    "Personal Android SIGNUP → " + email + " → " +
+                    (result.isValid() ? "OK" : "ERRO: " + result.getMessage())
+                );
+
+                this.conexao.close();
+                return;
+            }
+
+            // =====================================================
+            // PROTOCOLO TEXTO ANTIGO: VALIDAR_EMAIL (opcional manter)
+            // =====================================================
             if (primeiraLinha != null && primeiraLinha.startsWith("VALIDAR_EMAIL:")) {
                 PrintWriter escritor = new PrintWriter(this.conexao.getOutputStream(), true);
 
@@ -113,6 +168,10 @@ public class SupervisoraDeConexao extends Thread {
                     PedidoDeOperacao pedido = (PedidoDeOperacao) comunicado;
 
                     switch (pedido.getOperacao()) {
+                        // =================================================
+                        // PROTOCOLO OBJETO: SignUpClient
+                        // valor: "nome;email;senha;telefone;cidade"
+                        // =================================================
                         case "SignUpClient": {
                             String[] partes = pedido.getValor().split(";", -1);
                             if (partes.length < 5) {
@@ -132,6 +191,40 @@ public class SupervisoraDeConexao extends Thread {
                                 password,
                                 phone,
                                 city
+                            );
+
+                            this.usuario.receba(new Resultado(result.isValid()));
+                            break;
+                        }
+
+                        // =================================================
+                        // PROTOCOLO OBJETO: SignUpPersonal
+                        // valor: "nome;email;senha;telefone;cidade;cpf;cref"
+                        // (se um dia você quiser usar via objeto)
+                        // =================================================
+                        case "SignUpPersonal": {
+                            String[] partes = pedido.getValor().split(";", -1);
+                            if (partes.length < 7) {
+                                this.usuario.receba(new Resultado(false));
+                                break;
+                            }
+
+                            String name     = partes[0];
+                            String email    = partes[1];
+                            String password = partes[2];
+                            String phone    = partes[3];
+                            String city     = partes[4];
+                            String cpf      = partes[5];
+                            String cref     = partes[6];
+
+                            ValidationResult result = SignUpPersonalValidator.validate(
+                                name,
+                                email,
+                                password,
+                                phone,
+                                city,
+                                cpf,
+                                cref
                             );
 
                             this.usuario.receba(new Resultado(result.isValid()));
