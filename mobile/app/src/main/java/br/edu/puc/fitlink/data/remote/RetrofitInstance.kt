@@ -44,6 +44,9 @@ interface PersonalApi {
     suspend fun getPersonalsByCity(
         @Path("city") city: String
     ): List<PersonalResponseDto>
+
+    @GET("Personal/getById/{personalId}")
+    suspend fun getById(@Path("personalId") personalId: String): PersonalResponseDto
 }
 
 // ======== RETROFIT INSTANCE ========
