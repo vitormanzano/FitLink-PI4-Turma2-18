@@ -22,12 +22,6 @@ fun BottomBar(current: String, onNavigate: (String) -> Unit) {
             label = { Text("Busca", color = Color.Black) }
         )
         NavigationBarItem(
-            selected = current == "progress",
-            onClick = { onNavigate("progress") },
-            icon = { Icon(Icons.Outlined.QueryStats, contentDescription = "Progresso", tint = Color.Black) },
-            label = { Text("Progresso", color = Color.Black) }
-        )
-        NavigationBarItem(
             selected = current == "profile",
             onClick = { onNavigate("profile") },
             icon = { Icon(Icons.Outlined.Person, contentDescription = "Perfil", tint = Color.Black) },

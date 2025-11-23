@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "firstTime",
+                        startDestination = "search",
                         modifier = Modifier.fillMaxSize()
                     ) {
                         composable("firstTime") { FirstTimeScreen(navController) }
@@ -59,10 +59,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable("search") { //SearchScreen()
-                        }
-                        composable("progress") { //ProgressScreen()
-                        }
+                        composable("search") { SearchAScreen() }
                         composable("profile") { //UserProfileScreen()
                         }
                     }
