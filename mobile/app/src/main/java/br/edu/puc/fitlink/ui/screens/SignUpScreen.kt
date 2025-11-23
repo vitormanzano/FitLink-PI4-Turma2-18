@@ -192,14 +192,22 @@ fun SignUpScreen(navController: NavHostController) {
                 onClick = {
                     scope.launch {
                         carregando = true
-                        socketVm.validarEmail(email) { valido ->
+
+                        socketVm.validarSignUpClient(
+                            name = nome,
+                            email = email,
+                            password = senha,
+                            phone = telefone,
+                            city = "cidadeteste" // depois troca pelo campo de cidade real
+                        ) { valido, msgErro ->
                             if (valido) {
                                 tipoMensagem = "success"
-                                mensagemDialog = "E-mail válido! Cadastrando..."
+                                mensagemDialog = "Dados válidos! Cadastrando..."
                                 mostrarDialog = true
 
                                 scope.launch {
                                     delay(1000)
+
                                     if (isProfessor) {
                                         val dto = RegisterPersonalDto(
                                             name = nome,
@@ -219,6 +227,7 @@ fun SignUpScreen(navController: NavHostController) {
                                             else
                                                 "Erro: $msg"
                                             mostrarDialog = true
+
                                             scope.launch {
                                                 delay(1500)
                                                 if (ok) navController.navigate("login")
@@ -241,6 +250,7 @@ fun SignUpScreen(navController: NavHostController) {
                                             else
                                                 "Erro: $msg"
                                             mostrarDialog = true
+
                                             scope.launch {
                                                 delay(1500)
                                                 if (ok) navController.navigate("login")
@@ -251,7 +261,7 @@ fun SignUpScreen(navController: NavHostController) {
                             } else {
                                 carregando = false
                                 tipoMensagem = "error"
-                                mensagemDialog = "E-mail inválido!"
+                                mensagemDialog = msgErro ?: "Dados inválidos! Verifique os campos."
                                 mostrarDialog = true
                             }
                         }
