@@ -30,6 +30,7 @@ import br.edu.puc.fitlink.ui.screens.NewStudentsScreen
 import br.edu.puc.fitlink.ui.screens.PersonalDetailScreen
 import br.edu.puc.fitlink.ui.screens.SearchAScreen
 import br.edu.puc.fitlink.ui.screens.SignUpScreen
+import br.edu.puc.fitlink.ui.screens.StudentsDetailsScreen
 import br.edu.puc.fitlink.ui.screens.UserProfileScreen
 import br.edu.puc.fitlink.ui.theme.FitTheme
 
@@ -44,7 +45,7 @@ class MainActivity : ComponentActivity() {
                 // Rotas do aluno
                 val bottomRoutesAluno = remember { setOf("home", "search", "profile") }
                 // Rotas do personal
-                val bottomRoutesPersonal = remember { setOf("newStudents", "myStudents", "profile") }
+                val bottomRoutesPersonal = remember { setOf("newStudents", "myStudents", "profile", "studentsDetails") }
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -86,7 +87,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "profile",
+                        startDestination = "myStudents",
                         modifier = Modifier.fillMaxSize()
                     ) {
                         composable("firstTime") {
@@ -161,12 +162,17 @@ class MainActivity : ComponentActivity() {
 
                         // PERSONAL - NOVOS ALUNOS
                         composable("newStudents") {
-                            NewStudentsScreen()
+                            NewStudentsScreen(onAlunoClick = { navController.navigate("studentsDetails")})
                         }
 
                         // PERSONAL - MEUS ALUNOS
                         composable("myStudents") {
-                            MyStudentsScreen()
+                            MyStudentsScreen( onAlunoClick = { navController.navigate("studentsDetails")} )
+                        }
+
+                        // PERSONAL - MEUS ALUNOS
+                        composable("studentsDetails") {
+                            StudentsDetailsScreen(navController)
                         }
                     }
                 }

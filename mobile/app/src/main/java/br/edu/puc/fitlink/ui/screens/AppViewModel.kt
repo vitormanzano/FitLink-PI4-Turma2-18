@@ -36,7 +36,7 @@ class AppViewModel : ViewModel() {
     var clientId by mutableStateOf<String?>(null)
         private set
 
-    var isProfessor by mutableStateOf(false)
+    var isProfessor by mutableStateOf(true)
         private set
 
     var workoutGroups by mutableStateOf<List<WorkoutGroup>>(emptyList())
