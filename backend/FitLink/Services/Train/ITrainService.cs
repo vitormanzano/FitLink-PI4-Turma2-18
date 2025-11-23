@@ -1,10 +1,14 @@
 ﻿using FitLink.Dtos.Train;
-using FitLink.Models;
 
 namespace FitLink.Services.Train
 {
     public interface ITrainService
     {
-        Task Register(RegisterTrainDto registerTrainDto);
+        Task<ResponseTrainDto> Register(RegisterTrainDto registerTrainDto);
+        Task<ResponseTrainDto> GetTrainById(string trainId);
+        Task<ResponseTrainDto> GetTrainByClientId(string clientId);
+        Task<List<ResponseTrainDto>> GetTrainsByPersonalId(string personalId);
+        Task<ResponseTrainDto> UpdateTrainById(string trainId, UpdateTrainDto updateTrainDto);
+        Task DeleteTrainById(string trainId);
     }
 }
