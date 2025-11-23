@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import br.edu.puc.fitlink.ui.components.BottomBar
 import br.edu.puc.fitlink.ui.screens.*
@@ -59,9 +60,14 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable("search") { SearchAScreen() }
-                        composable("profile") { //UserProfileScreen()
+                        composable("search") { SearchAScreen(navController = navController) }
+                        composable("profile") { }
+
+                        composable("personalDetail") {
+                            PersonalDetailScreen(onBack = { navController.popBackStack() })
                         }
+
+
                     }
                 }
             }

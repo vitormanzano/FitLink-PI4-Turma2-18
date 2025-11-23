@@ -1,6 +1,7 @@
 package br.edu.puc.fitlink.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,30 +19,32 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import br.edu.puc.fitlink.R
 import br.edu.puc.fitlink.ui.components.TopBar
 import br.edu.puc.fitlink.ui.theme.FitBlack
 
 data class Personal(
+    val id: Int,
     val nome: String,
-    val especialidade: String,
     val cidade: String,
     val fotoRes: Int
 )
 
 @Composable
 fun SearchAScreen(
+    navController: NavHostController,
     onPersonalClick: (Personal) -> Unit = {}
 ) {
     var searchCidade by remember { mutableStateOf("") }
     var searchNome by remember { mutableStateOf("") }
 
     val personais = listOf(
-        Personal("Carlos Silva", "Hipertrofia", "Campinas", R.drawable.ic_male),
-        Personal("Ana Souza", "Funcional", "Campinas", R.drawable.ic_female),
-        Personal("Lucas Mendes", "Emagrecimento", "São Paulo", R.drawable.ic_male),
-        Personal("Mariana Torres", "Funcional", "Valinhos", R.drawable.ic_female),
-        Personal("Rafael Costa", "Hipertrofia", "São Paulo", R.drawable.ic_male)
+        Personal(1,"Carlos Silva",  "Campinas", R.drawable.ic_male),
+        Personal(2,"Ana Souza", "Campinas", R.drawable.ic_female),
+        Personal(3,"Lucas Mendes", "São Paulo", R.drawable.ic_male),
+        Personal(4,"Mariana Torres", "Valinhos", R.drawable.ic_female),
+        Personal(5,"Rafael Costa", "São Paulo", R.drawable.ic_male)
     )
 
     // --- FILTRAGEM ---
@@ -96,7 +99,6 @@ fun SearchAScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // Campo de busca - Nome
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -137,7 +139,7 @@ fun SearchAScreen(
                 }
             } else {
                 items(personaisFiltrados) { p ->
-                    PersonalItem(p) { onPersonalClick(p) }
+                    PersonalItem(p) { navController.navigate("personalDetail") }
                     Spacer(Modifier.height(16.dp))
                 }
             }
@@ -152,6 +154,7 @@ fun PersonalItem(personal: Personal, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
+            .clickable { onClick() }
     ) {
         Image(
             painter = painterResource(personal.fotoRes),
@@ -167,7 +170,6 @@ fun PersonalItem(personal: Personal, onClick: () -> Unit) {
                 fontWeight = FontWeight.Bold,
                 color = FitBlack
             )
-            Text(personal.especialidade, style = MaterialTheme.typography.bodyMedium)
             Text(
                 personal.cidade,
                 style = MaterialTheme.typography.bodySmall,
