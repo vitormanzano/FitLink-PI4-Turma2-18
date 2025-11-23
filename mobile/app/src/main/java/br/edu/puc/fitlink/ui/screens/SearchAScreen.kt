@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,9 +18,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import br.edu.puc.fitlink.R
 import br.edu.puc.fitlink.data.model.PersonalResponseDto
+import br.edu.puc.fitlink.ui.components.CityDropdownField
 import br.edu.puc.fitlink.ui.components.TopBar
 import br.edu.puc.fitlink.ui.theme.FitBlack
 
@@ -38,7 +37,7 @@ fun SearchAScreen(
         if (searchCidade.length >= 3) {
             vm.searchByCity(searchCidade)
         } else {
-            vm.searchByCity("") // limpa resultados se apagar a cidade
+            vm.searchByCity("") // limpa resultados se apagar/limpar
         }
     }
 
@@ -52,13 +51,12 @@ fun SearchAScreen(
 
         Spacer(Modifier.height(16.dp))
 
-        TextField(
+        // Campo de cidade com dropdown + filtro
+        CityDropdownField(
             value = searchCidade,
             onValueChange = { searchCidade = it },
-            placeholder = { Text("Digite a cidade") },
-            leadingIcon = { Icon(Icons.Outlined.Place, null) },
+            label = "Cidade (SP)",
             modifier = Modifier
-                .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         )
 
@@ -124,7 +122,6 @@ fun PersonalItem(
             .clickable { onClick() }
     ) {
 
-        // Placeholder de imagem (já que não temos avatar real ainda)
         Image(
             painter = painterResource(R.drawable.ic_male),
             contentDescription = null,

@@ -33,6 +33,7 @@ import br.edu.puc.fitlink.R
 import br.edu.puc.fitlink.auth.AuthViewModel
 import br.edu.puc.fitlink.data.model.RegisterClientDto
 import br.edu.puc.fitlink.data.model.RegisterPersonalDto
+import br.edu.puc.fitlink.ui.components.CityDropdownField
 import br.edu.puc.fitlink.validations.ClienteViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -47,6 +48,8 @@ fun SignUpScreen(navController: NavHostController) {
     var senha by remember { mutableStateOf("") }
     var senhaVisivel by remember { mutableStateOf(false) }
     var isProfessor by remember { mutableStateOf(false) }
+
+    var cidade by remember { mutableStateOf("") }
 
     var mostrarDialog by remember { mutableStateOf(false) }
     var mensagemDialog by remember { mutableStateOf("") }
@@ -121,6 +124,15 @@ fun SignUpScreen(navController: NavHostController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             InputField("Email", email, { email = it }, Icons.Default.Email, KeyboardType.Email)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ===== CIDADE (SP) =====
+            CityDropdownField(
+                value = cidade,
+                onValueChange = { cidade = it },
+                label = "Cidade (SP)"
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             if (isProfessor) {
@@ -200,7 +212,7 @@ fun SignUpScreen(navController: NavHostController) {
                                 email = email,
                                 password = senha,
                                 phone = telefone,
-                                city = "cidadeteste", // depois troca pelo campo de cidade real
+                                city = cidade,
                                 cpf = cpf,
                                 cref = cref
                             ) { valido, msgErro ->
@@ -216,7 +228,7 @@ fun SignUpScreen(navController: NavHostController) {
                                             name = nome,
                                             email = email,
                                             password = senha,
-                                            city = "cidadeteste",
+                                            city = cidade,
                                             cpf = cpf,
                                             cref = cref,
                                             phone = telefone
@@ -251,7 +263,7 @@ fun SignUpScreen(navController: NavHostController) {
                                 email = email,
                                 password = senha,
                                 phone = telefone,
-                                city = "cidadeteste" // depois troca pelo campo real
+                                city = cidade
                             ) { valido, msgErro ->
                                 if (valido) {
                                     tipoMensagem = "success"
@@ -266,7 +278,7 @@ fun SignUpScreen(navController: NavHostController) {
                                             email = email,
                                             password = senha,
                                             phone = telefone,
-                                            city = "cidadeteste"
+                                            city = cidade
                                         )
 
                                         authVm.register(dto) { ok, msg ->
