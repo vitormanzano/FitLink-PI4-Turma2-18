@@ -22,6 +22,7 @@ import br.edu.puc.fitlink.ui.components.BottomBar
 import br.edu.puc.fitlink.ui.components.BottomBarPersonal
 import br.edu.puc.fitlink.ui.screens.AppViewModel
 import br.edu.puc.fitlink.ui.screens.EditProfileScreen
+import br.edu.puc.fitlink.ui.screens.EditStudentsWorkoutScreen
 import br.edu.puc.fitlink.ui.screens.FirstTimeScreen
 import br.edu.puc.fitlink.ui.screens.LoginScreen
 import br.edu.puc.fitlink.ui.screens.MyStudentsScreen
@@ -32,6 +33,7 @@ import br.edu.puc.fitlink.ui.screens.PersonalProfileContent
 import br.edu.puc.fitlink.ui.screens.SearchAScreen
 import br.edu.puc.fitlink.ui.screens.SignUpScreen
 import br.edu.puc.fitlink.ui.screens.StudentsDetailsScreen
+import br.edu.puc.fitlink.ui.screens.StudentsWorkoutScreen
 import br.edu.puc.fitlink.ui.screens.UserProfileScreen
 import br.edu.puc.fitlink.ui.theme.FitTheme
 
@@ -46,7 +48,7 @@ class MainActivity : ComponentActivity() {
                 // Rotas do aluno
                 val bottomRoutesAluno = remember { setOf("home", "search", "profile") }
                 // Rotas do personal
-                val bottomRoutesPersonal = remember { setOf("newStudents", "myStudents", "personalProfile", "studentsDetails") }
+                val bottomRoutesPersonal = remember { setOf("newStudents", "myStudents", "personalProfile", "studentsDetails", "studentsWorkout", "editStudentsWorkout") }
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -88,7 +90,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "myStudents",
+                        startDestination = "studentsWorkout",
                         modifier = Modifier.fillMaxSize()
                     ) {
                         composable("firstTime") {
@@ -164,7 +166,7 @@ class MainActivity : ComponentActivity() {
                         // PERSONAL - NOVOS ALUNOS
                         composable("newStudents") {
                             NewStudentsScreen(onAlunoClick = { navController.navigate("studentsDetails")})
-                        }-
+                        }
 
                         // PERSONAL - MEUS ALUNOS
                         composable("myStudents") {
@@ -177,8 +179,24 @@ class MainActivity : ComponentActivity() {
                         }
 
                         // PERSONAL - PERFIL
+
                         composable("personalProfile") {
-                            PersonalProfileContent()
+//                            PersonalProfileContent()
+                        }
+
+                        // PERSONAL - EDITAR PERFIL
+                        composable("personalEditProfile") {
+                            TODO("IMPLEMENTAR TOTALMENTE")
+                        }
+
+                        // PERSONAL - VER TEINO DO ALUNO
+                        composable("studentsWorkout") {
+                            StudentsWorkoutScreen(navController)
+                        }
+
+                        // PERSONAL - CRIAR/EDITAR TEINO DO ALUNO
+                        composable("editStudentsWorkout") {
+                            EditStudentsWorkoutScreen(navController)
                         }
                     }
                 }

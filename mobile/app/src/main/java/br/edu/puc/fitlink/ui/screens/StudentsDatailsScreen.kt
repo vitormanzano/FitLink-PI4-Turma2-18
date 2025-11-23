@@ -110,7 +110,7 @@ fun StudentsDetailsScreen(navController: NavHostController) {
 
 
                     OutlinedButton(
-                        onClick = { },
+                        onClick = { navController.navigate("studentsWorkout")},
                         shape = RoundedCornerShape(20.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = FitBlack),
                         border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.dp),
@@ -217,33 +217,6 @@ fun StudentsDetailsScreen(navController: NavHostController) {
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun ProfileTopBar(onLogout: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(64.dp)
-            .background(FitYellow)
-    ) {
-        Text(
-            "Perfil do Aluno",
-            style = MaterialTheme.typography.titleLarge,
-            color = FitBlack,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.align(Alignment.Center)
-        )
-
-        IconButton(
-            onClick = onLogout,
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 12.dp)
-        ) {
-            Icon(Icons.AutoMirrored.Outlined.Logout, contentDescription = "Logout", tint = FitBlack)
         }
     }
 }
