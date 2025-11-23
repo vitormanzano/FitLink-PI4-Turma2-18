@@ -204,7 +204,7 @@ fun PersonalDetailContent(
 }
 
 @Composable
-fun SectionTitle(text: String) {
+private fun SectionTitle(text: String) {
     Text(
         text,
         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
