@@ -12,5 +12,6 @@ namespace FitLink.Repository.Client
         Task<IEnumerable<ClientModel>> GetClientsByPersonalId(string personalId);
         Task LinkClientToPersonal(Expression<Func<ClientModel, bool>> filterExpression, UpdateDefinition<ClientModel> update);
         Task CloseLinkWithPersonal(Expression<Func<ClientModel, bool>> filterExpression, UpdateDefinition<ClientModel> update);
+        Task AddInformations(Expression<Func<ClientModel, bool>> filterExpression, UpdateDefinition<ClientModel> update)
     }
 }

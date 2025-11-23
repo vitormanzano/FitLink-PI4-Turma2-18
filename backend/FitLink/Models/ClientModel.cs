@@ -16,6 +16,9 @@ namespace FitLink.Models
         public string Phone { get; private set; }
         public string City { get; private set; }
         [BsonRepresentation(BsonType.String)]
+        public string? AboutMe { get; set; }
+        public string? Goals { get; set; }
+        public string? Metrics { get; set; }
         public string? PersonalId { get; private set; }
 
         public ClientModel() { } // Construtor vazio necessário para o MongoDB
@@ -28,7 +31,10 @@ namespace FitLink.Models
             HashedPassword = hashedPassword;
             Phone = phone;
             City = city;
-            PersonalId = null;
+            AboutMe = null;
+            Goals = null;
+            Metrics = null;
+            PersonalId = null;            
         }
     }
 }
