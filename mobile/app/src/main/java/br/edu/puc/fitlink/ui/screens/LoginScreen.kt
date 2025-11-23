@@ -31,7 +31,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(navController: NavHostController) {
+fun LoginScreen(navController: NavHostController, onLoginSuccess: (String) -> Unit) {
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
     var senhaVisivel by remember { mutableStateOf(false) }
@@ -221,9 +221,13 @@ fun LoginScreen(navController: NavHostController) {
                                     apiVm.login(dto) { ok, user, erro ->
                                         if (ok && user != null) {
                                             mensagemDialog = "Bem-vindo, ${user.name}!"
-                                            navController.navigate("home")
+                                            mostrarDialog = true
+
+                                            // 🔥 aqui a mágica: avisa pra Activity o id do cliente
+                                            onLoginSuccess(user.id)
                                         } else {
                                             mensagemDialog = erro ?: "Falha no login. Verifique seus dados."
+                                            mostrarDialog = true
                                         }
                                     }
                                 }

@@ -9,6 +9,19 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import java.util.concurrent.TimeUnit
+import br.edu.puc.fitlink.data.model.ResponseTrainDto
+import retrofit2.http.GET
+import retrofit2.http.Path
+
+
+
+interface TrainApi {
+    @GET("Train/getByClientId/{clientId}")
+    suspend fun getTrainByClientId(
+        @Path("clientId") clientId: String
+    ): ResponseTrainDto
+}
+
 
 // ======== CLIENT API ========
 interface ClientApi {
@@ -30,14 +43,7 @@ interface PersonalApi {
 
 // ======== RETROFIT INSTANCE ========
 object RetrofitInstance {
-
-    // --- ajuste aqui sua URL ---
-    // 🔹 local backend ASP.NET no emulador:
-    // private const val BASE_URL = "http://10.0.2.2:5000/"
-    // 🔹 ou com HTTPS:
-    // private const val BASE_URL = "https://10.0.2.2:5001/"
-    // 🔹 produção:
-    private const val BASE_URL = "http://10.0.2.2:5229/" // mantenha a barra no final
+    private const val BASE_URL = "http://10.0.2.2:5229/"
 
     // logging (mostra requisições e respostas no Logcat)
     private val client by lazy {

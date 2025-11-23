@@ -45,11 +45,23 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "search",
+                        startDestination = "firstTime",
                         modifier = Modifier.fillMaxSize()
                     ) {
                         composable("firstTime") { FirstTimeScreen(navController) }
-                        composable("login") { LoginScreen(navController) }
+                        composable("login") {
+                            LoginScreen(
+                                navController = navController,
+                                onLoginSuccess = { clientId ->
+                                    vm.updateClientId(clientId)      // salva o ID no AppViewModel
+                                    vm.connectPersonal()          // opcional: já marca que tem personal
+
+                                    navController.navigate("home") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
                         composable("signUp") { SignUpScreen(navController) }
 
                         composable("home") {
