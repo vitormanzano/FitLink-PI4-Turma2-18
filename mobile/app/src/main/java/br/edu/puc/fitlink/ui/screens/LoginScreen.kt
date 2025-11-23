@@ -26,6 +26,7 @@ import androidx.navigation.NavHostController
 import br.edu.puc.fitlink.R
 import br.edu.puc.fitlink.auth.AuthViewModel
 import br.edu.puc.fitlink.data.model.LoginClientDto
+import br.edu.puc.fitlink.data.model.LoginPersonalDto
 import br.edu.puc.fitlink.validations.ClienteViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -206,28 +207,37 @@ fun LoginScreen(navController: NavHostController, onLoginSuccess: (String, Boole
             Button(
                 onClick = {
                     scope.launch {
-                        // 1️⃣ Valida via socket
                         socketVm.validarEmail(email) { valido ->
                             if (valido) {
                                 mensagemDialog = "E-mail válido! Entrando..."
                                 mostrarDialog = true
 
-                                // 2️⃣ Espera um pouquinho pra feedback visual
                                 scope.launch {
                                     delay(1000)
 
-                                    // 3️⃣ Agora faz login real via API
-                                    val dto = LoginClientDto(email, senha)
-                                    apiVm.login(dto) { ok, user, erro ->
-                                        if (ok && user != null) {
-                                            mensagemDialog = "Bem-vindo, ${user.name}!"
-                                            mostrarDialog = true
-
-                                            // 🔥 aqui a mágica: avisa pra Activity o id do cliente
-                                            onLoginSuccess(user.id, isProfessor)
-                                        } else {
-                                            mensagemDialog = erro ?: "Falha no login. Verifique seus dados."
-                                            mostrarDialog = true
+                                    if (isProfessor) {
+                                        // PROFESSOR
+                                        apiVm.loginPersonal(LoginPersonalDto(email, senha)) { ok, user, erro ->
+                                            if (ok && user != null) {
+                                                mensagemDialog = "Bem-vindo, ${user.name}!"
+                                                mostrarDialog = true
+                                                onLoginSuccess(user.id, true)
+                                            } else {
+                                                mensagemDialog = erro ?: "Falha no login."
+                                                mostrarDialog = true
+                                            }
+                                        }
+                                    } else {
+                                        // ALUNO
+                                        apiVm.login(LoginClientDto(email, senha)) { ok, user, erro ->
+                                            if (ok && user != null) {
+                                                mensagemDialog = "Bem-vindo, ${user.name}!"
+                                                mostrarDialog = true
+                                                onLoginSuccess(user.id, false)
+                                            } else {
+                                                mensagemDialog = erro ?: "Falha no login."
+                                                mostrarDialog = true
+                                            }
                                         }
                                     }
                                 }
@@ -238,6 +248,7 @@ fun LoginScreen(navController: NavHostController, onLoginSuccess: (String, Boole
                         }
                     }
                 },
+
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

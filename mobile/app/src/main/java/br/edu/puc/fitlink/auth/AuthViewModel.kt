@@ -8,6 +8,8 @@ import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
 
+    // --------- CLIENTE (ALUNO) ---------
+
     fun register(dto: RegisterClientDto, onResult: (ok: Boolean, msg: String) -> Unit) {
         viewModelScope.launch {
             try {
@@ -24,7 +26,10 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    fun login(dto: LoginClientDto, onResult: (ok: Boolean, user: ClientResponseDto?, erro: String?) -> Unit) {
+    fun login(
+        dto: LoginClientDto,
+        onResult: (ok: Boolean, user: ClientResponseDto?, erro: String?) -> Unit
+    ) {
         viewModelScope.launch {
             try {
                 val resp = RetrofitInstance.clientApi.login(dto) // <-- clientApi
@@ -39,17 +44,38 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    // --------- PERSONAL (PROFESSOR) ---------
+
     fun registerPersonal(dto: RegisterPersonalDto, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             try {
                 val response = RetrofitInstance.personalApi.register(dto) // <-- personalApi
-                if (response.isSuccessful){
+                if (response.isSuccessful) {
                     val body = response.body()?.string() ?: "Cadastro realizado!"
-                    onResult(true, body)}
-                else
+                    onResult(true, body)
+                } else {
                     onResult(false, response.errorBody()?.string() ?: "Erro no cadastro")
+                }
             } catch (e: Exception) {
                 onResult(false, e.message ?: "Falha de rede")
+            }
+        }
+    }
+
+    fun loginPersonal(
+        dto: LoginPersonalDto,
+        onResult: (ok: Boolean, user: PersonalResponseDto?, erro: String?) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val resp = RetrofitInstance.personalApi.loginPersonal(dto) // <-- personalApi
+                if (resp.isSuccessful) {
+                    onResult(true, resp.body(), null)
+                } else {
+                    onResult(false, null, resp.errorBody()?.string() ?: "Login inválido")
+                }
+            } catch (e: Exception) {
+                onResult(false, null, e.message ?: "Falha de rede")
             }
         }
     }

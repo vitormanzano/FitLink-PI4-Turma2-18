@@ -40,6 +40,11 @@ interface PersonalApi {
     @POST("Personal/register")
     suspend fun register(@Body dto: RegisterPersonalDto): Response<ResponseBody>
 
+    @POST("Personal/login")
+    suspend fun loginPersonal(
+        @Body body: LoginPersonalDto
+    ): Response<PersonalResponseDto>
+
     @GET("Personal/city/{city}")
     suspend fun getPersonalsByCity(
         @Path("city") city: String
