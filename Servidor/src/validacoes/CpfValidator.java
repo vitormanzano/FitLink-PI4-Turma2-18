@@ -3,15 +3,20 @@ package validacoes;
 import java.util.InputMismatchException;
 
 public class CpfValidator {
-    public static boolean Validate(String cpf) {
+    public static ValidationResult validate(String cpf) {
+        if (StringValidator.validateIfEmptyOrNull(cpf))
+            return new ValidationResult(false, "CPF vazio!");
+
         if (cpf.equals("00000000000") ||
                 cpf.equals("11111111111") ||
                 cpf.equals("22222222222") || cpf.equals("33333333333") ||
                 cpf.equals("44444444444") || cpf.equals("55555555555") ||
                 cpf.equals("66666666666") || cpf.equals("77777777777") ||
-                cpf.equals("88888888888") || cpf.equals("99999999999") ||
-                (!StringValidator.ValidateIfLengthEquals(cpf, 11)))
-            return(false);
+                cpf.equals("88888888888") || cpf.equals("99999999999"))
+            return new ValidationResult(false, "CPF apenas com números iguais!");
+
+        if (!StringValidator.validateIfLengthEquals(cpf, 11))
+            return new ValidationResult(false, "CPF deve ter 11 caracteres! Digite apenas números!");
 
         char dig10, dig11;
         int sm, i, r, num, peso;
@@ -52,11 +57,11 @@ public class CpfValidator {
 
             // Verifica se os digitos calculados conferem com os digitos informados.
             if ((dig10 == cpf.charAt(9)) && (dig11 == cpf.charAt(10)))
-                return(true);
+                return new ValidationResult(true, "");
             else
-                return(false);
+                return new ValidationResult(false, "CPF inválido!");
         } catch (InputMismatchException erro) {
-            return(false);
+            return new ValidationResult(false, "Entrada deve conter apenas números!");
         }
     }
 }
