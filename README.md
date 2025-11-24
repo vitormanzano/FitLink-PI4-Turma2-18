@@ -140,3 +140,126 @@ java Servidor 3000
 
 5 - Certifique-se de que o MongoDB está em execução
 mongod
+
+## Testes
+<p>Testes para o processo de validação de dados do cadastro de um aluno</p>
+
+<table>
+  <tr>
+    <th>Cenário</th>
+    <th>Sequências INTERCLASSES para testar Cenário Solicitado</th>
+  </tr>
+
+  <tr>
+    <td>NORMAL</td>
+    <td>SignUpClientValidator().validate(nomeValido, emailValido, senhaValida, telefoneValido, cidadeValida)</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 1</td>
+    <td>SignUpClientValidator().validate(nomeInvalido, emailValido, senhaValida, telefoneValido, cidadeValida)</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 2</td>
+    <td>SignUpClientValidator().validate(nomeValido, emailInvalido, senhaValida, telefoneValido, cidadeValida)</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 3</td>
+    <td>SignUpClientValidator().validate(nomeValido, emailValido, senhaInvalida, telefoneValido, cidadeValida)</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 4</td>
+    <td>SignUpClientValidator().validate(nomeValido, emailValido, senhaValida, telefoneInvalido, cidadeValida)</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 5</td>
+    <td>SignUpClientValidator().validate(nomeValido, emailValido, senhaValida, telefoneValido, cidadeInvalida)</td>
+  </tr>
+</table>
+
+### Massa de dados
+<b>OBS: No resultado esperado ele deve retornar uma classe ValidationResult, onde tem um boolean se passou na validação ou não, e uma mensagem de erro. No resultado esperado/obtido será representado da seguinte forma: true, "". Sendo primeiro o boolean e o segundo a mensagem dele</b>
+
+<table>
+  <tr>
+    <th>Cenário</th>
+    <th>Nome</th>
+    <th>Email</th>
+    <th>Senha</th>
+    <th>Telefone</th>
+    <th>Cidade </th>
+    <th>Resultado esperado</th>
+    <th>Resultado obtido</th>
+  </tr>
+
+  <tr>
+    <td>NORMAL</td>
+    <td>vitor</td>
+    <td>vitor@gmail.com</td>
+    <td>vitor123</td>
+    <td>19983242758</td>
+    <td>São Paulo</td>
+    <td>true, ""</td>
+    <td>true, ""</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 1</td>
+    <td>vi</td>
+    <td>vitor@gmail.com</td>
+    <td>vitor123</td>
+    <td>19983242758</td>
+    <td>São Paulo</td>
+    <td>false, "Nome Precisa ter no mínimo 3 caracteres!"</td>
+    <td>false, "Nome Precisa ter no mínimo 3 caracteres!"</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 2</td>
+    <td>vitor</td>
+    <td>vitor.com</td>
+    <td>vitor123</td>
+    <td>19983242758</td>
+    <td>São Paulo</td>
+    <td>false, "Email mal formatado!"</td>
+    <td>false, "Email mal formatado!"</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 3</td>
+    <td>vitor</td>
+    <td>vitor@gmail.com</td>
+    <td>vi</td>
+    <td>19983242758</td>
+    <td>São Paulo</td>
+    <td>false, "Senha Precisa ter no mínimo 3 caracteres!"</td>
+    <td>false, "Senha Precisa ter no mínimo 3 caracteres!"</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 4</td>
+    <td>vitor</td>
+    <td>vitor@gmail.com</td>
+    <td>vitor123</td>
+    <td>1998324275</td>
+    <td>São Paulo</td>
+    <td>false, "Telefone precisa ter 11 caracteres!"</td>
+    <td>false, "Telefone precisa ter 11 caracteres!"</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 5</td>
+    <td>vitor</td>
+    <td>vitor@gmail.com</td>
+    <td>vitor123</td>
+    <td>1998324275</td>
+    <td>Sa</td>
+    <td>false, "Cidade Precisa ter no mínimo 3 caracteres!"</td>
+    <td>false, "Cidade Precisa ter no mínimo 3 caracteres!"</td>
+  </tr>
+</table>
+
