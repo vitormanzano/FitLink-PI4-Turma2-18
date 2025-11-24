@@ -182,10 +182,10 @@ class MainActivity : ComponentActivity() {
                         // PERSONAL - NOVOS ALUNOS
                         composable("newStudents") {
                             NewStudentsScreen(
-                                onAlunoClick = { navController.navigate("studentsDetails") }
+                                onAlunoClick = { navController.navigate("studentsDetails") },
+                                appViewModel = vm
                             )
                         }
-
                         // PERSONAL - MEUS ALUNOS
                         composable("myStudents") {
                             MyStudentsScreen(

@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.edu.puc.fitlink.R
 import br.edu.puc.fitlink.data.model.ClientResponseDto
 import br.edu.puc.fitlink.data.model.MetricsDto
 import br.edu.puc.fitlink.data.model.MoreInformationsDto
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 import br.edu.puc.fitlink.data.model.RegisterMessageDto
+import br.edu.puc.fitlink.data.model.ResponseMessageDto
 
 // ----------------- MODELOS DE UI -----------------
 
@@ -321,7 +323,7 @@ class MessageViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                val resp = ApiClient.messageApi.register(dto)
+                val resp = RetrofitInstance.messageApi.register(dto)
 
                 if (resp.isSuccessful) {
                     onResult(true, "Solicitação enviada ao personal!")
@@ -330,6 +332,91 @@ class MessageViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 onResult(false, e.message ?: "Erro de rede ao enviar solicitação")
+            }
+        }
+    }
+}
+
+data class AlunoInteressado(
+    val messageId: String,
+    val clientId: String,
+    val nome: String,
+    val cidade: String,
+    val fotoRes: Int = R.drawable.ic_male, // por enquanto default
+    val hasAccepted: Boolean
+)
+
+class NewStudentsViewModel : ViewModel() {
+
+    var alunos by mutableStateOf<List<AlunoInteressado>>(emptyList())
+        private set
+
+    var isLoading by mutableStateOf(false)
+        private set
+
+    var errorMessage by mutableStateOf<String?>(null)
+        private set
+
+    fun loadInteressados(personalId: String) {
+        if (personalId.isBlank()) return
+
+        viewModelScope.launch {
+            isLoading = true
+            errorMessage = null
+
+            try {
+                val resp = RetrofitInstance.messageApi.getAllMessagesByPersonalId(personalId)
+
+                if (!resp.isSuccessful) {
+                    errorMessage = resp.errorBody()?.string()
+                        ?: "Erro ao carregar solicitações."
+                    alunos = emptyList()
+                    return@launch
+                }
+
+                val messages = resp.body().orEmpty()
+
+                // Se quiser só os NÃO aceitos:
+                val pendentes = messages.filter { !it.hasAccepted }
+
+                val lista = mutableListOf<AlunoInteressado>()
+
+                for (msg: ResponseMessageDto in pendentes) {
+                    // busca dados do aluno
+                    try {
+                        val clientResp = RetrofitInstance.clientApi.getById(msg.clientId)
+                        if (clientResp.isSuccessful) {
+                            val client: ClientResponseDto? = clientResp.body()
+                            if (client != null) {
+                                lista.add(
+                                    AlunoInteressado(
+                                        messageId = msg.id,
+                                        clientId = msg.clientId,
+                                        nome = client.name,
+                                        cidade = client.city ?: "Cidade não informada",
+                                        fotoRes = R.drawable.ic_male, // futuramente pode trocar por genero
+                                        hasAccepted = msg.hasAccepted
+                                    )
+                                )
+                            }
+                        }
+                    } catch (_: Exception) {
+                        // se um aluno der erro, apenas pula ele
+                    }
+                }
+
+                alunos = lista
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                errorMessage = when (e) {
+                    is HttpException -> "Erro ${e.code()} ao carregar solicitações."
+                    is IOException -> "Falha de conexão com o servidor."
+                    else -> "Erro inesperado: ${e.message}"
+                }
+                alunos = emptyList()
+            } finally {
+                isLoading = false
             }
         }
     }

@@ -92,6 +92,11 @@ interface MessageApi {
     suspend fun register(
         @Body dto: RegisterMessageDto
     ): Response<ResponseMessageDto>
+
+    @GET("Message/GetAllMessagesByPersonalId/{personalId}")
+    suspend fun getAllMessagesByPersonalId(
+        @Path("personalId") personalId: String
+    ): Response<List<ResponseMessageDto>>
 }
 
 // ======== RETROFIT INSTANCE ========
@@ -119,4 +124,6 @@ object RetrofitInstance {
     // instâncias
     val clientApi: ClientApi by lazy { retrofit.create(ClientApi::class.java) }
     val personalApi: PersonalApi by lazy { retrofit.create(PersonalApi::class.java) }
+
+    val messageApi: MessageApi by lazy { retrofit.create(MessageApi::class.java) }
 }

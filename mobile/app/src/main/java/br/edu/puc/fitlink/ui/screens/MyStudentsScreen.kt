@@ -30,11 +30,11 @@ fun MyStudentsScreen(
     onAlunoClick: (AlunoInteressado) -> Unit = {}
 ) {
     val alunos = listOf(
-        AlunoInteressado("João Pedro", "Campinas", R.drawable.ic_male),
-        AlunoInteressado("Mariana Torres", "Valinhos", R.drawable.ic_female),
-        AlunoInteressado("Lucas Almeida", "Sumaré", R.drawable.ic_male),
-        AlunoInteressado("Ana Souza", "Campinas", R.drawable.ic_female),
-        AlunoInteressado("Rafael Lima", "Paulínia", R.drawable.ic_male)
+        Aluno("João Pedro", "Campinas", R.drawable.ic_male),
+        Aluno("Mariana Torres", "Valinhos", R.drawable.ic_female),
+        Aluno("Lucas Almeida", "Sumaré", R.drawable.ic_male),
+        Aluno("Ana Souza", "Campinas", R.drawable.ic_female),
+        Aluno("Rafael Lima", "Paulínia", R.drawable.ic_male)
     )
 
     Scaffold(
@@ -57,9 +57,6 @@ fun MyStudentsScreen(
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(alunos) { aluno ->
-                    AlunoItem(aluno) { onAlunoClick(aluno) }
-                }
             }
         }
     }
