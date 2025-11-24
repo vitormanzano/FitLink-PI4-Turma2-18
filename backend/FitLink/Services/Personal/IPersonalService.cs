@@ -1,4 +1,5 @@
-﻿using FitLink.Dtos.Personal;
+﻿using FitLink.Dtos.Message;
+using FitLink.Dtos.Personal;
 
 namespace FitLink.Services.Personal
 {
