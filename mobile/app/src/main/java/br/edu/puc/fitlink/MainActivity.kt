@@ -29,7 +29,6 @@ import br.edu.puc.fitlink.ui.screens.MyStudentsScreen
 import br.edu.puc.fitlink.ui.screens.MyWorkoutsScreen
 import br.edu.puc.fitlink.ui.screens.NewStudentsScreen
 import br.edu.puc.fitlink.ui.screens.PersonalDetailScreen
-import br.edu.puc.fitlink.ui.screens.PersonalProfileContent
 import br.edu.puc.fitlink.ui.screens.SearchAScreen
 import br.edu.puc.fitlink.ui.screens.SignUpScreen
 import br.edu.puc.fitlink.ui.screens.StudentsDetailsScreen
@@ -147,7 +146,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // PERFIL (ALUNO) – agora com AppViewModel
+                        // PERFIL (ALUNO)
                         composable("profile") {
                             UserProfileScreen(
                                 navController = navController,
@@ -155,8 +154,12 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+                        // EDITAR PERFIL (ALUNO) – agora recebendo o AppViewModel correto
                         composable("editProfile") {
-                            EditProfileScreen(onBack = { navController.popBackStack() })
+                            EditProfileScreen(
+                                onBack = { navController.popBackStack() },
+                                appViewModel = vm
+                            )
                         }
 
                         // DETALHE DO PERSONAL

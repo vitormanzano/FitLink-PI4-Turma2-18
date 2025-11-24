@@ -2,10 +2,11 @@
 {
     public class MetricsModel
     {
-        public string Height { get; private set; }
-        public string Weight { get; private set; }
+        // setters públicos para o model binder conseguir preencher
+        public string Height { get; set; } = string.Empty;
+        public string Weight { get; set; } = string.Empty;
 
-        public MetricsModel() { } // Construtor vazio necessário para o MongoDB
+        public MetricsModel() { } // necessário pro Mongo
 
         public MetricsModel(string height, string weight)
         {

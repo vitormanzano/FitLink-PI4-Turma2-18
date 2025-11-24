@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -17,25 +18,49 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import br.edu.puc.fitlink.R
-import br.edu.puc.fitlink.ui.components.CircleAvatarPlaceholder
 import br.edu.puc.fitlink.ui.theme.FitBlack
 import br.edu.puc.fitlink.ui.theme.FitYellow
 
 @Composable
-fun EditProfileScreen(onBack: () -> Unit) {
-    // Dados fixos para teste
-    var nome by remember { mutableStateOf("Gabriel Adorno") }
-    var bio by remember { mutableStateOf("Sou estudante de Engenharia de Software e apaixonado por academia e tecnologia.") }
-    var altura by remember { mutableStateOf("1.83") }
-    var peso by remember { mutableStateOf("80.0") }
+fun EditProfileScreen(
+    onBack: () -> Unit,
+    appViewModel: AppViewModel,
+    profileViewModel: ProfileViewModel = viewModel()
+) {
+    val state = profileViewModel.state
+    val clientId = appViewModel.clientId
+
+    LaunchedEffect(clientId) {
+        if (!clientId.isNullOrBlank() && state.nome.isBlank()) {
+            profileViewModel.loadProfile(clientId)
+        }
+    }
+
+    var nome by rememberSaveable { mutableStateOf("") }
+    var bio by rememberSaveable { mutableStateOf("") }
+    var altura by rememberSaveable { mutableStateOf("") }
+    var peso by rememberSaveable { mutableStateOf("") }
 
     val objetivos = listOf("Hipertrofia", "Emagrecimento", "Condicionamento", "Resistência", "Mobilidade")
-    var objetivo by remember { mutableStateOf("Hipertrofia") }
+    var objetivo by rememberSaveable { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
-    var objetivoDescricao by remember { mutableStateOf("Ganhar massa muscular e força com acompanhamento personalizado.") }
+    var objetivoDescricao by rememberSaveable {
+        mutableStateOf(state.bio.ifBlank { "Ganhar massa muscular e força com acompanhamento personalizado." })
+    }
+
+    var mostrarDialog by remember { mutableStateOf(false) }
+    var mensagemDialog by remember { mutableStateOf("") }
+
+    LaunchedEffect(state.nome, state.bio, state.objetivoTag, state.altura, state.peso) {
+        if (state.nome.isNotBlank() && nome.isBlank()) nome = state.nome
+        if (state.bio.isNotBlank() && bio.isBlank()) bio = state.bio
+        if (state.objetivoTag.isNotBlank() && objetivo.isBlank()) objetivo = state.objetivoTag
+        if (state.altura.isNotBlank() && altura.isBlank()) altura = state.altura
+        if (state.peso.isNotBlank() && peso.isBlank()) peso = state.peso
+    }
 
     Scaffold(
         topBar = {
@@ -51,7 +76,11 @@ fun EditProfileScreen(onBack: () -> Unit) {
                         .align(Alignment.CenterStart)
                         .padding(start = 12.dp)
                 ) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Voltar", tint = FitBlack)
+                    Icon(
+                        Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = "Voltar",
+                        tint = FitBlack
+                    )
                 }
 
                 Text(
@@ -74,7 +103,6 @@ fun EditProfileScreen(onBack: () -> Unit) {
 
             Spacer(Modifier.height(24.dp))
 
-            // Avatar fixo (ic_male)
             Image(
                 painter = painterResource(R.drawable.ic_male),
                 contentDescription = null,
@@ -86,7 +114,6 @@ fun EditProfileScreen(onBack: () -> Unit) {
 
             Spacer(Modifier.height(24.dp))
 
-            // Campos de texto
             OutlinedTextField(
                 value = nome,
                 onValueChange = { nome = it },
@@ -106,7 +133,6 @@ fun EditProfileScreen(onBack: () -> Unit) {
 
             Spacer(Modifier.height(24.dp))
 
-            // Dropdown
             Text(
                 "Objetivo",
                 fontWeight = FontWeight.ExtraBold,
@@ -121,7 +147,11 @@ fun EditProfileScreen(onBack: () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(objetivo, modifier = Modifier.weight(1f), color = FitBlack)
+                    Text(
+                        objetivo.ifBlank { "Selecione um objetivo" },
+                        modifier = Modifier.weight(1f),
+                        color = FitBlack
+                    )
                     Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                 }
 
@@ -131,7 +161,7 @@ fun EditProfileScreen(onBack: () -> Unit) {
                 ) {
                     objetivos.forEach {
                         DropdownMenuItem(
-                            text = { Text(it, color = FitBlack) },
+                            text = { Text(it) },
                             onClick = {
                                 objetivo = it
                                 expanded = false
@@ -174,7 +204,25 @@ fun EditProfileScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(32.dp))
 
             Button(
-                onClick = { /* ação de salvar */ },
+                onClick = {
+
+                    if (objetivo.isBlank() || altura.isBlank() || peso.isBlank()) {
+                        mensagemDialog = "Preencha objetivo, altura e peso antes de salvar."
+                        mostrarDialog = true
+                        return@Button
+                    }
+
+                    profileViewModel.salvar(
+                        bio = bio,
+                        goals = objetivo,
+                        altura = altura,
+                        peso = peso
+                    ) { ok, msg ->
+                        mensagemDialog = msg
+                        mostrarDialog = true
+                        if (ok) onBack()
+                    }
+                },
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = FitYellow),
                 modifier = Modifier
@@ -184,5 +232,17 @@ fun EditProfileScreen(onBack: () -> Unit) {
                 Text("Salvar", color = FitBlack, fontWeight = FontWeight.SemiBold)
             }
         }
+    }
+
+    if (mostrarDialog) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialog = false },
+            confirmButton = {
+                TextButton(onClick = { mostrarDialog = false }) {
+                    Text("OK", color = FitBlack)
+                }
+            },
+            text = { Text(mensagemDialog) }
+        )
     }
 }
