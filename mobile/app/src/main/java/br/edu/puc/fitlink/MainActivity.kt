@@ -174,7 +174,8 @@ class MainActivity : ComponentActivity() {
 
                             PersonalDetailScreen(
                                 personalId = personalId,
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
+                                appViewModel = vm   // <-- passa o msm AppViewModel usado no app todo
                             )
                         }
 

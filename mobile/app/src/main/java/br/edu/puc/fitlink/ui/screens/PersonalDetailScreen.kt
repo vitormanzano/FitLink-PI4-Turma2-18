@@ -30,7 +30,9 @@ import br.edu.puc.fitlink.ui.theme.FitYellow
 fun PersonalDetailScreen(
     personalId: String,
     onBack: () -> Unit,
-    vm: PersonalDetailViewModel = viewModel()
+    appViewModel: AppViewModel,                     // <- recebe AppViewModel de fora
+    vm: PersonalDetailViewModel = viewModel(),
+    messageVm: MessageViewModel = viewModel()       // <- para enviar a mensagem
 ) {
     LaunchedEffect(personalId) {
         vm.loadPersonal(personalId)
@@ -38,7 +40,32 @@ fun PersonalDetailScreen(
 
     val state = vm.uiState
 
+    // Estados de feedback
+    var isSending by remember { mutableStateOf(false) }
+    var snackbarMsg by remember { mutableStateOf<String?>(null) }
+    var errorDialog by remember { mutableStateOf<String?>(null) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Quando snackbarMsg mudar, mostra snackbar
+    LaunchedEffect(snackbarMsg) {
+        snackbarMsg?.let {
+            snackbarHostState.showSnackbar(it)
+            snackbarMsg = null
+        }
+    }
+
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { snackbarData ->
+                Snackbar(
+                    containerColor = FitYellow,
+                    contentColor = FitBlack,
+                    shape = RoundedCornerShape(12.dp),
+                    snackbarData = snackbarData
+                )
+            }
+        },
         topBar = {
             TopAppBar(
                 title = {
@@ -87,10 +114,46 @@ fun PersonalDetailScreen(
             state.personal != null -> {
                 PersonalDetailContent(
                     personal = state.personal,
-                    innerPadding = innerPadding
+                    innerPadding = innerPadding,
+                    isSending = isSending,
+                    onTenhoInteresse = {
+                        val clientId = appViewModel.clientId
+
+                        if (clientId.isNullOrBlank()) {
+                            errorDialog = "Você precisa estar logado como aluno para enviar uma solicitação."
+                            return@PersonalDetailContent
+                        }
+
+                        isSending = true
+
+                        messageVm.enviarSolicitacao(
+                            clientId = clientId,
+                            personalId = personalId
+                        ) { ok, msg ->
+                            isSending = false
+                            if (ok) {
+                                snackbarMsg = msg
+                            } else {
+                                errorDialog = msg
+                            }
+                        }
+                    }
                 )
             }
         }
+    }
+
+    // Dialog de erro
+    if (errorDialog != null) {
+        AlertDialog(
+            onDismissRequest = { errorDialog = null },
+            confirmButton = {
+                TextButton(onClick = { errorDialog = null }) {
+                    Text("OK", color = FitBlack)
+                }
+            },
+            text = { Text(errorDialog!!) }
+        )
     }
 }
 
@@ -98,11 +161,10 @@ fun PersonalDetailScreen(
 @Composable
 fun PersonalDetailContent(
     personal: PersonalResponseDto,
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
+    isSending: Boolean,
+    onTenhoInteresse: () -> Unit
 ) {
-
-    var isVinculado: Boolean = false
-
     Column(
         modifier = Modifier
             .padding(innerPadding)
@@ -154,20 +216,31 @@ fun PersonalDetailContent(
 
             Spacer(Modifier.height(16.dp))
 
-            // Botão condicional
+            // Botão "Tenho interesse" com feedback
             Button(
-                onClick = { /* TODO: ação futura */ },
+                onClick = onTenhoInteresse,
+                enabled = !isSending,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isVinculado) Color(0xFFF44336) else FitYellow
+                    containerColor = if (isSending) Color.LightGray else FitYellow
                 ),
                 shape = RoundedCornerShape(50),
-                modifier = Modifier.fillMaxWidth(0.7f)
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .height(48.dp)
             ) {
-                Text(
-                    text = if (isVinculado) "Encerrar vínculo" else "Tenho interesse",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
+                if (isSending) {
+                    CircularProgressIndicator(
+                        color = FitBlack,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(22.dp)
+                    )
+                } else {
+                    Text(
+                        text = "Tenho interesse",
+                        color = FitBlack,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(Modifier.height(20.dp))
@@ -216,8 +289,6 @@ fun PersonalDetailContent(
         Spacer(Modifier.height(32.dp))
     }
 }
-
-
 
 // ---------------------------- Section Title ----------------------------
 @Composable

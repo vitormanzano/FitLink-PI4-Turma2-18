@@ -16,6 +16,7 @@ import br.edu.puc.fitlink.data.remote.RetrofitInstance
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
+import br.edu.puc.fitlink.data.model.RegisterMessageDto
 
 // ----------------- MODELOS DE UI -----------------
 
@@ -301,6 +302,34 @@ class ProfileViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 onResult(false, e.message ?: "Erro de rede")
+            }
+        }
+    }
+}
+
+class MessageViewModel : ViewModel() {
+
+    fun enviarSolicitacao(
+        clientId: String,
+        personalId: String,
+        onResult: (ok: Boolean, msg: String) -> Unit
+    ) {
+        val dto = RegisterMessageDto(
+            clientId = clientId,
+            personalId = personalId
+        )
+
+        viewModelScope.launch {
+            try {
+                val resp = ApiClient.messageApi.register(dto)
+
+                if (resp.isSuccessful) {
+                    onResult(true, "Solicitação enviada ao personal!")
+                } else {
+                    onResult(false, resp.errorBody()?.string() ?: "Erro ao enviar solicitação")
+                }
+            } catch (e: Exception) {
+                onResult(false, e.message ?: "Erro de rede ao enviar solicitação")
             }
         }
     }
