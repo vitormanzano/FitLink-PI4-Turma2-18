@@ -31,6 +31,7 @@ import br.edu.puc.fitlink.ui.screens.NewStudentsScreen
 import br.edu.puc.fitlink.ui.screens.PersonalDetailScreen
 import br.edu.puc.fitlink.ui.screens.SearchAScreen
 import br.edu.puc.fitlink.ui.screens.SignUpScreen
+import br.edu.puc.fitlink.ui.screens.StudentRequestScreen
 import br.edu.puc.fitlink.ui.screens.StudentsDetailsScreen
 import br.edu.puc.fitlink.ui.screens.StudentsWorkoutScreen
 import br.edu.puc.fitlink.ui.screens.UserProfileScreen
@@ -182,7 +183,9 @@ class MainActivity : ComponentActivity() {
                         // PERSONAL - NOVOS ALUNOS
                         composable("newStudents") {
                             NewStudentsScreen(
-                                onAlunoClick = { navController.navigate("studentsDetails") },
+                                onAlunoClick = { aluno ->
+                                    navController.navigate("studentRequest/${aluno.clientId}/${aluno.messageId}")
+                                },
                                 appViewModel = vm
                             )
                         }
@@ -190,6 +193,26 @@ class MainActivity : ComponentActivity() {
                         composable("myStudents") {
                             MyStudentsScreen(
                                 onAlunoClick = { navController.navigate("studentsDetails") }
+                            )
+                        }
+
+                        composable(
+                            "studentRequest/{clientId}/{messageId}",
+                            arguments = listOf(
+                                navArgument("clientId") { type = NavType.StringType },
+                                navArgument("messageId") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+
+                            val clientId = backStackEntry.arguments!!.getString("clientId")!!
+                            val messageId = backStackEntry.arguments!!.getString("messageId")!!
+                            val personalId = vm.clientId!!   // personal logado
+
+                            StudentRequestScreen(
+                                clientId = clientId,
+                                messageId = messageId,
+                                personalId = personalId,
+                                onBack = { navController.popBackStack() }
                             )
                         }
 

@@ -97,6 +97,11 @@ interface MessageApi {
     suspend fun getAllMessagesByPersonalId(
         @Path("personalId") personalId: String
     ): Response<List<ResponseMessageDto>>
+
+    @DELETE("Message/delete/{messageId}")
+    suspend fun deleteMessage(
+        @Path("messageId") messageId: String
+    ): Response<ResponseBody>
 }
 
 // ======== RETROFIT INSTANCE ========
