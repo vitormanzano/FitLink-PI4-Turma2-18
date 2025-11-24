@@ -192,7 +192,10 @@ class MainActivity : ComponentActivity() {
                         // PERSONAL - MEUS ALUNOS
                         composable("myStudents") {
                             MyStudentsScreen(
-                                onAlunoClick = { navController.navigate("studentsDetails") }
+                                appViewModel = vm,
+                                onAlunoClick = { aluno ->
+                                    navController.navigate("studentsDetails/${aluno.id}")
+                                }
                             )
                         }
 
@@ -217,8 +220,15 @@ class MainActivity : ComponentActivity() {
                         }
 
                         // PERSONAL - DETALHES DO ALUNO
-                        composable("studentsDetails") {
-                            StudentsDetailsScreen(navController)
+                        composable(
+                            "studentsDetails/{clientId}",
+                            arguments = listOf(navArgument("clientId"){ type = NavType.StringType })
+                        ) { entry ->
+                            val clientId = entry.arguments!!.getString("clientId")!!
+                            StudentsDetailsScreen(
+                                navController = navController,
+                                clientId = clientId
+                            )
                         }
 
                         // PERSONAL - PERFIL

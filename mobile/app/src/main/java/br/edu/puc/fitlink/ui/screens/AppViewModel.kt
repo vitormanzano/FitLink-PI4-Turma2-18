@@ -422,6 +422,63 @@ class NewStudentsViewModel : ViewModel() {
     }
 }
 
+data class Aluno(
+    val id: String,
+    val nome: String,
+    val cidade: String,
+    val fotoRes: Int
+)
+
+class MyStudentsViewModel : ViewModel() {
+
+    var alunos by mutableStateOf<List<Aluno>>(emptyList())
+        private set
+
+    var isLoading by mutableStateOf(false)
+        private set
+
+    var errorMessage by mutableStateOf<String?>(null)
+        private set
+
+    fun loadMyStudents(personalId: String) {
+        if (personalId.isBlank()) return
+
+        viewModelScope.launch {
+            isLoading = true
+            errorMessage = null
+
+            try {
+                val resp = RetrofitInstance.clientApi.getClientsByPersonalTrainer(personalId)
+
+                if (!resp.isSuccessful) {
+                    errorMessage = resp.errorBody()?.string()
+                        ?: "Erro ao carregar alunos."
+                    alunos = emptyList()
+                    return@launch
+                }
+
+                val clients = resp.body().orEmpty()
+
+                alunos = clients.map { client ->
+                    Aluno(
+                        id = client.id,
+                        nome = client.name,
+                        cidade = client.city ?: "Cidade não informada",
+                        fotoRes = R.drawable.ic_male // depois pode mudar p/ genero
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                errorMessage = e.message ?: "Erro inesperado ao carregar alunos."
+                alunos = emptyList()
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+}
+
+
 // ----------------- EXTENSÃO PARA CONVERTER RESPONSETRAINDTO -----------------
 
 private fun ResponseTrainDto.toWorkoutGroup(): WorkoutGroup {

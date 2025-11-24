@@ -64,6 +64,12 @@ interface ClientApi {
         @Path("clientId") clientId: String,
         @Body dto: MoreInformationsDto
     ): Response<ResponseBody>
+
+    @GET("Client/getClientsByPersonalTrainer/{personalTrainerId}")
+    suspend fun getClientsByPersonalTrainer(
+        @Path("personalTrainerId") personalId: String
+    ): Response<List<ClientResponseDto>>
+
 }
 
 
