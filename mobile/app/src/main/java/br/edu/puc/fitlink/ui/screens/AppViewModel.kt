@@ -6,9 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.edu.puc.fitlink.data.model.ClientResponseDto
+import br.edu.puc.fitlink.data.model.MetricsDto
+import br.edu.puc.fitlink.data.model.MoreInformationsDto
 import br.edu.puc.fitlink.data.model.PersonalResponseDto
 import br.edu.puc.fitlink.data.model.ResponseTrainDto
 import br.edu.puc.fitlink.data.remote.ApiClient
+import br.edu.puc.fitlink.data.remote.RetrofitInstance
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
@@ -201,6 +205,102 @@ class PersonalDetailViewModel : ViewModel() {
                         else -> "Erro inesperado: ${e.message}"
                     }
                 )
+            }
+        }
+    }
+}
+data class ProfileUiState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val nome: String = "",
+    val bio: String = "",
+    val objetivoTag: String = "",
+    val altura: String = "",
+    val peso: String = ""
+)
+
+class ProfileViewModel : ViewModel() {
+
+    var state: ProfileUiState by mutableStateOf(ProfileUiState())
+        private set
+
+    private var clientId: String? = null
+
+    fun loadProfile(id: String) {
+        clientId = id
+
+        viewModelScope.launch {
+            state = state.copy(isLoading = true, error = null)
+
+            try {
+                val resp = RetrofitInstance.clientApi.getById(id)
+
+                if (resp.isSuccessful) {
+                    val user: ClientResponseDto = resp.body()!!
+
+                    Log.d("ProfileVM", "Resposta getById: $user")
+
+                    state = state.copy(
+                        isLoading = false,
+                        nome = user.name,
+                        bio = user.aboutMe ?: "",
+                        objetivoTag = user.goals ?: "",
+                        altura = user.metrics?.height ?: "",
+                        peso = user.metrics?.weight ?: ""
+                    )
+                } else {
+                    val err = resp.errorBody()?.string()
+                    Log.e("ProfileVM", "Erro HTTP ${resp.code()} - $err")
+                    state = state.copy(
+                        isLoading = false,
+                        error = err ?: "Erro ao carregar perfil"
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("ProfileVM", "Exceção ao carregar perfil", e)
+                state = state.copy(
+                    isLoading = false,
+                    error = e.message ?: "Erro de rede"
+                )
+            }
+        }
+    }
+
+    fun salvar(
+        bio: String,
+        goals: String,
+        altura: String,
+        peso: String,
+        onResult: (Boolean, String) -> Unit
+    ) {
+        val id = clientId ?: return
+
+        val dto = MoreInformationsDto(
+            aboutMe = bio,
+            goals = goals,
+            metrics = MetricsDto(
+                height = altura,
+                weight = peso
+            )
+        )
+
+        viewModelScope.launch {
+            try {
+                val resp = RetrofitInstance.clientApi.addInformations(id, dto)
+
+                if (resp.isSuccessful) {
+                    state = state.copy(
+                        bio = bio,
+                        objetivoTag = goals,
+                        altura = altura,
+                        peso = peso
+                    )
+                    onResult(true, "Informações salvas!")
+                } else {
+                    onResult(false, resp.errorBody()?.string() ?: "Erro ao salvar")
+                }
+            } catch (e: Exception) {
+                onResult(false, e.message ?: "Erro de rede")
             }
         }
     }

@@ -48,7 +48,16 @@ class MainActivity : ComponentActivity() {
                 // Rotas do aluno
                 val bottomRoutesAluno = remember { setOf("home", "search", "profile") }
                 // Rotas do personal
-                val bottomRoutesPersonal = remember { setOf("newStudents", "myStudents", "personalProfile", "studentsDetails", "studentsWorkout", "editStudentsWorkout") }
+                val bottomRoutesPersonal = remember {
+                    setOf(
+                        "newStudents",
+                        "myStudents",
+                        "personalProfile",
+                        "studentsDetails",
+                        "studentsWorkout",
+                        "editStudentsWorkout"
+                    )
+                }
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -90,7 +99,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "studentsWorkout",
+                        startDestination = "firstTime",
                         modifier = Modifier.fillMaxSize()
                     ) {
                         composable("firstTime") {
@@ -138,16 +147,19 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // PERFIL (compartilhado)
+                        // PERFIL (ALUNO) – agora com AppViewModel
                         composable("profile") {
-                            UserProfileScreen(navController)
+                            UserProfileScreen(
+                                navController = navController,
+                                appViewModel = vm
+                            )
                         }
 
                         composable("editProfile") {
                             EditProfileScreen(onBack = { navController.popBackStack() })
                         }
 
-                        // DETALHE DO PERSONAL (com ID na rota)\
+                        // DETALHE DO PERSONAL
                         composable(
                             route = "personalDetail/{personalId}",
                             arguments = listOf(
@@ -165,12 +177,16 @@ class MainActivity : ComponentActivity() {
 
                         // PERSONAL - NOVOS ALUNOS
                         composable("newStudents") {
-                            NewStudentsScreen(onAlunoClick = { navController.navigate("studentsDetails")})
+                            NewStudentsScreen(
+                                onAlunoClick = { navController.navigate("studentsDetails") }
+                            )
                         }
 
                         // PERSONAL - MEUS ALUNOS
                         composable("myStudents") {
-                            MyStudentsScreen( onAlunoClick = { navController.navigate("studentsDetails")} )
+                            MyStudentsScreen(
+                                onAlunoClick = { navController.navigate("studentsDetails") }
+                            )
                         }
 
                         // PERSONAL - DETALHES DO ALUNO
@@ -179,9 +195,8 @@ class MainActivity : ComponentActivity() {
                         }
 
                         // PERSONAL - PERFIL
-
                         composable("personalProfile") {
-//                            PersonalProfileContent()
+                            // PersonalProfileContent()
                         }
 
                         // PERSONAL - EDITAR PERFIL
@@ -189,12 +204,12 @@ class MainActivity : ComponentActivity() {
                             TODO("IMPLEMENTAR TOTALMENTE")
                         }
 
-                        // PERSONAL - VER TEINO DO ALUNO
+                        // PERSONAL - VER TREINO DO ALUNO
                         composable("studentsWorkout") {
                             StudentsWorkoutScreen(navController)
                         }
 
-                        // PERSONAL - CRIAR/EDITAR TEINO DO ALUNO
+                        // PERSONAL - CRIAR/EDITAR TREINO DO ALUNO
                         composable("editStudentsWorkout") {
                             EditStudentsWorkoutScreen(navController)
                         }

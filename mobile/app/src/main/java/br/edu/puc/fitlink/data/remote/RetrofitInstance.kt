@@ -25,15 +25,47 @@ interface TrainApi {
 
 // ======== CLIENT API ========
 interface ClientApi {
+
+    // ---------- REGISTER / LOGIN ----------
     @POST("Client/register")
     suspend fun register(@Body client: RegisterClientDto): Response<ResponseBody>
 
     @POST("Client/login")
     suspend fun login(@Body client: LoginClientDto): Response<ClientResponseDto>
 
+    // ---------- GET ----------
     @GET("Client/getById/{id}")
     suspend fun getById(@Path("id") id: String): Response<ClientResponseDto>
+
+    // ---------- UPDATE ----------
+    @PATCH("Client/update/{id}")
+    suspend fun updateClient(
+        @Path("id") id: String,
+        @Body dto: UpdateClientDto
+    ): Response<ClientResponseDto>
+
+    // ---------- DELETE ----------
+    @DELETE("Client/delete/{id}")
+    suspend fun deleteClient(@Path("id") id: String): Response<ResponseBody>
+
+    // ---------- LINK / UNLINK PERSONAL ----------
+    @PATCH("Client/linkToPersonal/{clientId}/{personalTrainerId}")
+    suspend fun linkPersonal(
+        @Path("clientId") clientId: String,
+        @Path("personalTrainerId") personalId: String
+    ): Response<ResponseBody>
+
+    @PATCH("Client/closeLinkWithPersonal/{clientId}")
+    suspend fun closeLink(@Path("clientId") clientId: String): Response<ResponseBody>
+
+    // ---------- ADD INFORMATIONS (PERFIL) ----------
+    @PATCH("Client/AddInformations/{clientId}")
+    suspend fun addInformations(
+        @Path("clientId") clientId: String,
+        @Body dto: MoreInformationsDto
+    ): Response<ResponseBody>
 }
+
 
 // ======== PERSONAL API ========
 interface PersonalApi {
