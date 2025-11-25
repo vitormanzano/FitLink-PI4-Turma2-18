@@ -44,7 +44,7 @@ fun EditProfileScreen(
     var altura by rememberSaveable { mutableStateOf("") }
     var peso by rememberSaveable { mutableStateOf("") }
 
-    val objetivos = listOf("Hipertrofia", "Emagrecimento", "Condicionamento", "Resistência", "Mobilidade")
+    val objetivos = listOf("Hipertrofia", "Emagrecimento", "Condicionamento", "Resistência", "Mobilidade", "Outro")
     var objetivo by rememberSaveable { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     var objetivoDescricao by rememberSaveable {
