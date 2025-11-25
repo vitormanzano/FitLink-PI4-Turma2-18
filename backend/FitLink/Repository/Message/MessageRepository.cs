@@ -16,5 +16,14 @@ namespace FitLink.Repository.Message
             return await _collection.Find(filter)
                 .ToListAsync();
         }
+
+        public async Task<MessageModel> GetByPersonalIdAndClientId(string clientId, string personalId)
+        {
+            var filter = Builders<MessageModel>.Filter.And(
+                Builders<MessageModel>.Filter.Eq(p => p.ClientId, clientId),
+                Builders<MessageModel>.Filter.Eq(p => p.PersonalId, personalId)
+            );
+            return await  _collection.Find(filter).FirstOrDefaultAsync();
+        }
     }
 }
