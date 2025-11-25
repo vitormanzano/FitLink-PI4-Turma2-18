@@ -36,11 +36,6 @@ namespace FitLink.Services.Message
 
             if (personalExist is null)
                 throw new UserNotFoundException("Personal não encontrado!");
-            
-            var messageAlreadyExist = _messageRepository.GetByPersonalIdAndClientId(registerMessageDto.PersonalId, registerMessageDto.ClientId);
-
-            if (messageAlreadyExist != null)
-                throw new MessageAlreadyExistsException();
 
             var messageModel = new MessageModel
             (
@@ -48,7 +43,7 @@ namespace FitLink.Services.Message
                 registerMessageDto.PersonalId
             );
 
-            await _messageRepository.InsertDocumentAsync(messageModel);
+            _messageRepository.InsertDocumentAsync(messageModel);
 
             var messageResponse = new ResponseMessageDto(
                 messageModel.Id,
