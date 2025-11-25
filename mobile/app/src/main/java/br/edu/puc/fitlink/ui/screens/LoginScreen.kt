@@ -32,7 +32,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(navController: NavHostController, onLoginSuccess: (String, Boolean) -> Unit) {
+fun LoginScreen(
+    navController: NavHostController,
+    appViewModel: AppViewModel = viewModel(),               // 👈 adicionamos aqui
+    onLoginSuccess: (String, Boolean) -> Unit               // mantém seu callback
+) {
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
     var senhaVisivel by remember { mutableStateOf(false) }
@@ -108,7 +112,6 @@ fun LoginScreen(navController: NavHostController, onLoginSuccess: (String, Boole
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Email
             TextField(
                 value = email,
                 onValueChange = { email = it },
@@ -129,7 +132,6 @@ fun LoginScreen(navController: NavHostController, onLoginSuccess: (String, Boole
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Senha
             TextField(
                 value = senha,
                 onValueChange = { senha = it },
@@ -221,6 +223,7 @@ fun LoginScreen(navController: NavHostController, onLoginSuccess: (String, Boole
                                             if (ok && user != null) {
                                                 mensagemDialog = "Bem-vindo, ${user.name}!"
                                                 mostrarDialog = true
+                                                // você sinaliza que é professor
                                                 onLoginSuccess(user.id, true)
                                             } else {
                                                 mensagemDialog = erro ?: "Falha no login."
@@ -229,10 +232,16 @@ fun LoginScreen(navController: NavHostController, onLoginSuccess: (String, Boole
                                         }
                                     } else {
                                         // ALUNO
-                                        apiVm.login(LoginClientDto(email, senha)) { ok, user, erro ->
+                                        apiVm.login(
+                                            LoginClientDto(email, senha),
+                                            appViewModel                      // 👈 passa AppViewModel pro AuthViewModel
+                                        ) { ok, user, erro ->
                                             if (ok && user != null) {
                                                 mensagemDialog = "Bem-vindo, ${user.name}!"
                                                 mostrarDialog = true
+
+                                                // AppViewModel já teve o clientId setado dentro do AuthViewModel
+                                                // mas se quiser, mantém seu callback também:
                                                 onLoginSuccess(user.id, false)
                                             } else {
                                                 mensagemDialog = erro ?: "Falha no login."
@@ -260,7 +269,6 @@ fun LoginScreen(navController: NavHostController, onLoginSuccess: (String, Boole
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ===== SEPARADOR =====
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.weight(1f))
                 Text("  ou  ", fontSize = 14.sp, color = Color.Black, textAlign = TextAlign.Center)
@@ -269,7 +277,6 @@ fun LoginScreen(navController: NavHostController, onLoginSuccess: (String, Boole
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ===== BOTÃO CADASTRO =====
             OutlinedButton(
                 onClick = { navController.navigate("signUp") },
                 modifier = Modifier
@@ -289,7 +296,6 @@ fun LoginScreen(navController: NavHostController, onLoginSuccess: (String, Boole
         }
     }
 
-    // ===== DIALOG =====
     if (mostrarDialog) {
         AlertDialog(
             onDismissRequest = { mostrarDialog = false },

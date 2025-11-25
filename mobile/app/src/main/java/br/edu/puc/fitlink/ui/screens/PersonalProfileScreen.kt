@@ -24,15 +24,14 @@ import br.edu.puc.fitlink.data.model.PersonalResponseDto
 import br.edu.puc.fitlink.ui.theme.FitBlack
 import br.edu.puc.fitlink.ui.theme.FitYellow
 
-// ---------------------------- Personal Detail Screen ----------------------------
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PersonalDetailScreen(
+fun PersonalProfileScreen(
     personalId: String,
     onBack: () -> Unit,
-    appViewModel: AppViewModel,                     // <- recebe AppViewModel de fora
+    appViewModel: AppViewModel,                   // <-- agora vem de fora
     vm: PersonalDetailViewModel = viewModel(),
-    messageVm: MessageViewModel = viewModel()       // <- para enviar a mensagem
+    messageVm: MessageViewModel = viewModel()     // <-- para enviar solicitação
 ) {
     LaunchedEffect(personalId) {
         vm.loadPersonal(personalId)
@@ -40,14 +39,13 @@ fun PersonalDetailScreen(
 
     val state = vm.uiState
 
-    // Estados de feedback
+    // FEEDBACK STATES
     var isSending by remember { mutableStateOf(false) }
     var snackbarMsg by remember { mutableStateOf<String?>(null) }
     var errorDialog by remember { mutableStateOf<String?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Quando snackbarMsg mudar, mostra snackbar
     LaunchedEffect(snackbarMsg) {
         snackbarMsg?.let {
             snackbarHostState.showSnackbar(it)
@@ -104,15 +102,12 @@ fun PersonalDetailScreen(
                         .fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        state.errorMessage ?: "Erro ao carregar",
-                        color = Color.Red
-                    )
+                    Text(state.errorMessage ?: "Erro ao carregar", color = Color.Red)
                 }
             }
 
             state.personal != null -> {
-                PersonalDetailContent(
+                PersonalProfileContent(
                     personal = state.personal,
                     innerPadding = innerPadding,
                     isSending = isSending,
@@ -121,7 +116,7 @@ fun PersonalDetailScreen(
 
                         if (clientId.isNullOrBlank()) {
                             errorDialog = "Você precisa estar logado como aluno para enviar uma solicitação."
-                            return@PersonalDetailContent
+                            return@PersonalProfileContent
                         }
 
                         isSending = true
@@ -131,11 +126,8 @@ fun PersonalDetailScreen(
                             personalId = personalId
                         ) { ok, msg ->
                             isSending = false
-                            if (ok) {
-                                snackbarMsg = msg
-                            } else {
-                                errorDialog = msg
-                            }
+                            if (ok) snackbarMsg = msg
+                            else errorDialog = msg
                         }
                     }
                 )
@@ -157,9 +149,8 @@ fun PersonalDetailScreen(
     }
 }
 
-// ---------------------------- Personal Detail Content ----------------------------
 @Composable
-fun PersonalDetailContent(
+fun PersonalProfileContent(
     personal: PersonalResponseDto,
     innerPadding: PaddingValues,
     isSending: Boolean,
@@ -175,7 +166,7 @@ fun PersonalDetailContent(
 
         Spacer(Modifier.height(16.dp))
 
-        // ------ FOTO + NOME ------
+        // FOTO + NOME
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -214,9 +205,9 @@ fun PersonalDetailContent(
                 )
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(20.dp))
 
-            // Botão "Tenho interesse" com feedback
+            // BOTÃO -> Tenho interesse
             Button(
                 onClick = onTenhoInteresse,
                 enabled = !isSending,
@@ -236,18 +227,19 @@ fun PersonalDetailContent(
                     )
                 } else {
                     Text(
-                        text = "Tenho interesse",
+                        "Tenho interesse",
                         color = FitBlack,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(32.dp))
         }
 
-        // ------ SOBRE ------
+        // SOBRE
         SectionTitle("Sobre")
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
@@ -269,10 +261,10 @@ fun PersonalDetailContent(
 
         Spacer(Modifier.height(20.dp))
 
-        // ------ PLANOS ------
+        // PLANOS
         SectionTitle("Planos de Treino")
 
-        PlanoCardPersonal(
+        PlanoCard(
             titulo = "Plano Basic",
             descricao = "Treino voltado ao ganho de massa muscular com acompanhamento semanal e ajustes personalizados.",
             imagem = R.drawable.img_basico
@@ -280,7 +272,7 @@ fun PersonalDetailContent(
 
         Spacer(Modifier.height(12.dp))
 
-        PlanoCardPersonal(
+        PlanoCard(
             titulo = "Plano Premium",
             descricao = "Programa completo com foco em hipertrofia, nutrição esportiva e acompanhamento diário via app.",
             imagem = R.drawable.img_premium
@@ -290,7 +282,6 @@ fun PersonalDetailContent(
     }
 }
 
-// ---------------------------- Section Title ----------------------------
 @Composable
 private fun SectionTitle(text: String) {
     Text(
@@ -301,9 +292,8 @@ private fun SectionTitle(text: String) {
     )
 }
 
-// ---------------------------- Plano Card ----------------------------
 @Composable
-fun PlanoCardPersonal(titulo: String, descricao: String, imagem: Int) {
+fun PlanoCard(titulo: String, descricao: String, imagem: Int) {
     Card(
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),

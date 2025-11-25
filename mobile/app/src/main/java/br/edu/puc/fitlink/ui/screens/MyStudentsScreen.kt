@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -15,50 +16,81 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import br.edu.puc.fitlink.R
 import br.edu.puc.fitlink.ui.components.TopBar
 import br.edu.puc.fitlink.ui.theme.FitBlack
 
-data class Aluno(
-    val nome: String,
-    val cidade: String,
-    val fotoRes: Int
-)
-
 @Composable
 fun MyStudentsScreen(
-    onAlunoClick: (AlunoInteressado) -> Unit = {}
+    appViewModel: AppViewModel,
+    onAlunoClick: (Aluno) -> Unit = {},           // <- callback opcional
+    vm: MyStudentsViewModel = viewModel()
 ) {
-    val alunos = listOf(
-        AlunoInteressado("João Pedro", "Campinas", R.drawable.ic_male),
-        AlunoInteressado("Mariana Torres", "Valinhos", R.drawable.ic_female),
-        AlunoInteressado("Lucas Almeida", "Sumaré", R.drawable.ic_male),
-        AlunoInteressado("Ana Souza", "Campinas", R.drawable.ic_female),
-        AlunoInteressado("Rafael Lima", "Paulínia", R.drawable.ic_male)
-    )
+    val alunos = vm.alunos
+    val isLoading = vm.isLoading
+    val error = vm.errorMessage
+
+    // appViewModel.clientId = ID do personal logado
+    val personalId = appViewModel.clientId
+
+    LaunchedEffect(personalId) {
+        if (!personalId.isNullOrBlank()) {
+            vm.loadMyStudents(personalId)
+        }
+    }
 
     Scaffold(
         topBar = { TopBar(title = "Meus Alunos") },
     ) { innerPadding ->
-        if (alunos.isEmpty()) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Nenhum aluno ainda.", color = Color.Gray)
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(alunos) { aluno ->
-                    AlunoItem(aluno) { onAlunoClick(aluno) }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                error != null -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(error, color = Color.Red)
+                    }
+                }
+
+                alunos.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Nenhum aluno ainda.", color = Color.Gray)
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(alunos) { aluno ->
+                            AlunoItem(
+                                aluno = aluno,
+                                onClick = { onAlunoClick(aluno) } // <- callback para navegar
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -106,3 +138,4 @@ fun AlunoItem(
         }
     }
 }
+

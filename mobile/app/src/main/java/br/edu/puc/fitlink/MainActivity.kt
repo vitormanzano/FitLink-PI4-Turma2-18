@@ -22,6 +22,7 @@ import br.edu.puc.fitlink.ui.components.BottomBar
 import br.edu.puc.fitlink.ui.components.BottomBarPersonal
 import br.edu.puc.fitlink.ui.screens.AppViewModel
 import br.edu.puc.fitlink.ui.screens.EditProfileScreen
+import br.edu.puc.fitlink.ui.screens.EditStudentsWorkoutScreen
 import br.edu.puc.fitlink.ui.screens.FirstTimeScreen
 import br.edu.puc.fitlink.ui.screens.LoginScreen
 import br.edu.puc.fitlink.ui.screens.MyStudentsScreen
@@ -30,6 +31,9 @@ import br.edu.puc.fitlink.ui.screens.NewStudentsScreen
 import br.edu.puc.fitlink.ui.screens.PersonalDetailScreen
 import br.edu.puc.fitlink.ui.screens.SearchAScreen
 import br.edu.puc.fitlink.ui.screens.SignUpScreen
+import br.edu.puc.fitlink.ui.screens.StudentRequestScreen
+import br.edu.puc.fitlink.ui.screens.StudentsDetailsScreen
+import br.edu.puc.fitlink.ui.screens.StudentsWorkoutScreen
 import br.edu.puc.fitlink.ui.screens.UserProfileScreen
 import br.edu.puc.fitlink.ui.theme.FitTheme
 
@@ -41,24 +45,37 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val vm: AppViewModel = viewModel()
 
-                // Rotas do aluno
+                // Rotas base (sem parâmetros) que mostram bottom bar do aluno
                 val bottomRoutesAluno = remember { setOf("home", "search", "profile") }
-                // Rotas do personal
-                val bottomRoutesPersonal = remember { setOf("newStudents", "myStudents", "profile") }
+
+                // Rotas base (sem parâmetros) que mostram bottom bar do personal
+                val bottomRoutesPersonal = remember {
+                    setOf(
+                        "newStudents",
+                        "myStudents",
+                        "personalProfile",
+                        "studentsDetails",
+                        "studentsWorkout",
+                        "editStudentsWorkout"
+                    )
+                }
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
+
+                // Normaliza rota pra comparar (studentsWorkout/123 -> studentsWorkout)
+                val currentBaseRoute = currentRoute?.substringBefore("/")
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = Color.White,
                     bottomBar = {
                         when {
-                            vm.isProfessor && currentRoute in bottomRoutesPersonal -> {
+                            vm.isProfessor && currentBaseRoute in bottomRoutesPersonal -> {
                                 BottomBarPersonal(
-                                    current = currentRoute ?: "newStudents",
+                                    current = currentBaseRoute ?: "newStudents",
                                     onNavigate = { dest ->
-                                        if (dest != currentRoute) {
+                                        if (dest != currentBaseRoute) {
                                             navController.navigate(dest) {
                                                 popUpTo("newStudents") { inclusive = false }
                                                 launchSingleTop = true
@@ -68,11 +85,11 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
-                            !vm.isProfessor && currentRoute in bottomRoutesAluno -> {
+                            !vm.isProfessor && currentBaseRoute in bottomRoutesAluno -> {
                                 BottomBar(
-                                    current = currentRoute ?: "home",
+                                    current = currentBaseRoute ?: "home",
                                     onNavigate = { dest ->
-                                        if (dest != currentRoute) {
+                                        if (dest != currentBaseRoute) {
                                             navController.navigate(dest) {
                                                 popUpTo("home") { inclusive = false }
                                                 launchSingleTop = true
@@ -86,7 +103,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "profile",
+                        startDestination = "firstTime",
                         modifier = Modifier.fillMaxSize()
                     ) {
                         composable("firstTime") {
@@ -134,16 +151,23 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // PERFIL (compartilhado)
+                        // PERFIL (ALUNO)
                         composable("profile") {
-                            UserProfileScreen(navController)
+                            UserProfileScreen(
+                                navController = navController,
+                                appViewModel = vm
+                            )
                         }
 
+                        // EDITAR PERFIL (ALUNO)
                         composable("editProfile") {
-                            EditProfileScreen(onBack = { navController.popBackStack() })
+                            EditProfileScreen(
+                                onBack = { navController.popBackStack() },
+                                appViewModel = vm
+                            )
                         }
 
-                        // DETALHE DO PERSONAL (com ID na rota)\
+                        // DETALHE DO PERSONAL
                         composable(
                             route = "personalDetail/{personalId}",
                             arguments = listOf(
@@ -155,18 +179,100 @@ class MainActivity : ComponentActivity() {
 
                             PersonalDetailScreen(
                                 personalId = personalId,
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
+                                appViewModel = vm
                             )
                         }
 
                         // PERSONAL - NOVOS ALUNOS
                         composable("newStudents") {
-                            NewStudentsScreen()
+                            NewStudentsScreen(
+                                onAlunoClick = { aluno ->
+                                    navController.navigate("studentRequest/${aluno.clientId}/${aluno.messageId}")
+                                },
+                                appViewModel = vm
+                            )
                         }
 
                         // PERSONAL - MEUS ALUNOS
                         composable("myStudents") {
-                            MyStudentsScreen()
+                            MyStudentsScreen(
+                                appViewModel = vm,
+                                onAlunoClick = { aluno ->
+                                    navController.navigate("studentsDetails/${aluno.id}")
+                                }
+                            )
+                        }
+
+                        composable(
+                            "studentRequest/{clientId}/{messageId}",
+                            arguments = listOf(
+                                navArgument("clientId") { type = NavType.StringType },
+                                navArgument("messageId") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val clientId = backStackEntry.arguments!!.getString("clientId")!!
+                            val messageId = backStackEntry.arguments!!.getString("messageId")!!
+                            val personalId = vm.clientId!!   // personal logado
+
+                            StudentRequestScreen(
+                                clientId = clientId,
+                                messageId = messageId,
+                                personalId = personalId,
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+
+                        // PERSONAL - DETALHES DO ALUNO
+                        composable(
+                            "studentsDetails/{clientId}",
+                            arguments = listOf(navArgument("clientId") { type = NavType.StringType })
+                        ) { entry ->
+                            val clientId = entry.arguments!!.getString("clientId")!!
+                            StudentsDetailsScreen(
+                                navController = navController,
+                                clientId = clientId
+                            )
+                        }
+
+                        // PERSONAL - PERFIL
+                        composable("personalProfile") {
+                            // PersonalProfileContent()
+                        }
+
+                        // PERSONAL - EDITAR PERFIL
+                        composable("personalEditProfile") {
+                            TODO("IMPLEMENTAR TOTALMENTE")
+                        }
+
+                        // PERSONAL - VER TREINO DO ALUNO
+                        composable(
+                            route = "studentsWorkout/{studentId}",
+                            arguments = listOf(
+                                navArgument("studentId") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val studentId =
+                                backStackEntry.arguments?.getString("studentId") ?: ""
+                            StudentsWorkoutScreen(
+                                navController = navController,
+                                studentId = studentId
+                            )
+                        }
+
+                        // PERSONAL - CRIAR/EDITAR TREINO DO ALUNO
+                        composable(
+                            route = "editStudentsWorkout/{studentId}",
+                            arguments = listOf(
+                                navArgument("studentId") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val studentId = backStackEntry.arguments?.getString("studentId") ?: ""
+                            EditStudentsWorkoutScreen(
+                                navController = navController,
+                                studentId = studentId,
+                                appViewModel = vm
+                            )
                         }
                     }
                 }

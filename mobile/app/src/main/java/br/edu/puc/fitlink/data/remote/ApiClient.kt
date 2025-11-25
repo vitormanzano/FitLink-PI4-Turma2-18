@@ -16,4 +16,5 @@ object ApiClient {
 
     val trainApi: TrainApi = retrofit.create(TrainApi::class.java)
     val personalApi: PersonalApi = retrofit.create(PersonalApi::class.java)
+
 }
