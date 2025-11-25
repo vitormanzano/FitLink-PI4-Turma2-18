@@ -58,7 +58,7 @@ namespace FitLink.Controllers
         {
             try
             {
-                var trains = await _trainService.GetTrainByClientId(clientId);
+                var trains = await _trainService.GetTrainsByClientId(clientId);
                 return Ok(trains);
             }
             catch (Exception ex)

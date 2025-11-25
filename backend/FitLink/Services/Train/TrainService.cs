@@ -69,19 +69,19 @@ namespace FitLink.Services.Train
             return train.ModelToResponseDto();
         }
 
-        public async Task<ResponseTrainDto> GetTrainByClientId(string clientId)
+        public async Task<List<ResponseTrainDto>> GetTrainsByClientId(string clientId)
         {
             var client = await _clientRepository.GetDocumentByIdAsync(clientId);
 
             if (client is null)
                 throw new UserNotFoundException();
 
-            var train = await _trainRepository.GetTrainByClientId(clientId);
+            var trains = await _trainRepository.GetTrainsByClientId(clientId);
 
-            if (train is null)
+            if (trains.Count() == 0)
                 throw new TrainNotFoundException();
 
-            return train.ModelToResponseDto();
+            return trains.Select(t => t.ModelToResponseDto()).ToList();
         }
 
         public async Task<List<ResponseTrainDto>> GetTrainsByPersonalId(string personalId)

@@ -10,13 +10,13 @@ namespace FitLink.Repository.Train
         {
         }
 
-        public async Task<TrainModel> GetTrainByClientId(string clientId)
+        public async Task<List<TrainModel>> GetTrainsByClientId(string clientId)
         {
             var filter = Builders<TrainModel>.Filter
                 .Eq(t => t.ClientId, clientId);
 
             return await _collection.Find(filter)
-                .FirstOrDefaultAsync();
+                .ToListAsync();
         }
 
         public async Task<List<TrainModel>> GetTrainsByPersonalId(string personalId)
