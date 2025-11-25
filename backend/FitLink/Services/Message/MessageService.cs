@@ -42,8 +42,13 @@ namespace FitLink.Services.Message
                 registerMessageDto.ClientId,
                 registerMessageDto.PersonalId
             );
+            
+            var messageExist = await _messageRepository.GetByClientIdAndPersonalId(registerMessageDto.ClientId, registerMessageDto.PersonalId);
 
-            _messageRepository.InsertDocumentAsync(messageModel);
+            if (messageExist != null)
+                throw new MessageAlreadyExistsException();
+
+            await _messageRepository.InsertDocumentAsync(messageModel);
 
             var messageResponse = new ResponseMessageDto(
                 messageModel.Id,
