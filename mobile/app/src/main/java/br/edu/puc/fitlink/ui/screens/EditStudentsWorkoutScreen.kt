@@ -103,7 +103,21 @@ fun EditStudentsWorkoutScreen(
                 Text(it, color = MaterialTheme.colorScheme.error)
                 Spacer(Modifier.height(8.dp))
             }
+            if (vm.successMessage != null) {
+                Text(
+                    text = vm.successMessage!!,
+                    color = Color.Green,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
 
+            if (vm.errorMessage != null) {
+                Text(
+                    text = vm.errorMessage!!,
+                    color = Color.Red,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
             // Botão Salvar
             Button(
                 onClick = {

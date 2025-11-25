@@ -25,11 +25,12 @@ import br.edu.puc.fitlink.ui.theme.FitYellow
 @Composable
 fun StudentsWorkoutScreen(
     navController: NavHostController,
-    studentId: String,                         // <- id do aluno
-    vm: StudentsWorkoutViewModel = viewModel() // <- nosso novo VM
+    studentId: String,
+    vm: StudentsWorkoutViewModel = viewModel()
 ) {
 
     LaunchedEffect(studentId) {
+        println("DEBUG_STUDENT_SCREEN → carregando treinos do aluno: $studentId")
         vm.loadWorkoutsForStudent(studentId)
     }
 
@@ -43,6 +44,7 @@ fun StudentsWorkoutScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
+                    println("DEBUG_STUDENT_SCREEN → Navegando para editStudentsWorkout/$studentId")
                     navController.navigate("editStudentsWorkout/$studentId")
                 },
                 containerColor = FitYellow
@@ -52,58 +54,63 @@ fun StudentsWorkoutScreen(
         }
     ) { innerPadding ->
 
-        when {
-            vm.isLoading -> {
-                Box(
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        ) {
 
-            vm.errorMessage != null -> {
-                Box(
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(vm.errorMessage!!, color = MaterialTheme.colorScheme.error)
-                }
-            }
-
-            vm.workoutGroups.isEmpty() -> {
-                Box(
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Esse aluno ainda não possui treinos cadastrados.")
-                }
-            }
-
-            else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .padding(horizontal = 16.dp)
-                ) {
-                    items(vm.workoutGroups) { group ->
-                        WorkoutGroupSection(
-                            group = group,
-                            onDelete = { item ->
-                                vm.removeExercise(group, item)
-                            }
-                        )
-                        Spacer(Modifier.height(16.dp))
+            when {
+                vm.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
+                }
 
-                    item {
-                        Spacer(Modifier.height(80.dp)) // espaço pro FAB
+                vm.errorMessage != null -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "ERRO: ${vm.errorMessage}",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+
+                vm.workoutGroups.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Sem treinos cadastrados para esse aluno.")
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .fillMaxSize()
+                    ) {
+                        items(vm.workoutGroups) { group ->
+
+                            println("DEBUG_STUDENT_SCREEN → exibindo treino: ${group.title}")
+
+                            WorkoutGroupSection(
+                                group = group,
+                                onDelete = { item ->
+                                    println("DEBUG_STUDENT_SCREEN → remover exercício: ${item.name}")
+                                    vm.removeExercise(group, item)
+                                }
+                            )
+
+                            Spacer(Modifier.height(16.dp))
+                        }
                     }
                 }
             }

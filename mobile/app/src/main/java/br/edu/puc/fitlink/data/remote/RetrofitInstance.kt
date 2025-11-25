@@ -17,15 +17,15 @@ import retrofit2.http.Path
 
 interface TrainApi {
 
+    @GET("Train/getByClientId/{clientId}")
+    suspend fun getTrainsByClientId(
+        @Path("clientId") clientId: String
+    ): List<ResponseTrainDto>
+
     @POST("Train/register")
     suspend fun register(
         @Body dto: RegisterTrainDto
     ): Response<ResponseTrainDto>
-
-    @GET("Train/getByClientId/{clientId}")
-    suspend fun getTrainByClientId(
-        @Path("clientId") clientId: String
-    ): ResponseTrainDto
 
     @PATCH("Train/update/{trainId}")
     suspend fun updateTrain(
@@ -36,10 +36,8 @@ interface TrainApi {
     @DELETE("Train/deleteById/{trainId}")
     suspend fun deleteTrain(
         @Path("trainId") trainId: String
-    ): Response<ResponseBody>
+    ): Response<Unit>
 }
-
-
 
 // ======== CLIENT API ========
 interface ClientApi {

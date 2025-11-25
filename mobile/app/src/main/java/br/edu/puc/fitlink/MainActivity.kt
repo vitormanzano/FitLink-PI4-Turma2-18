@@ -263,16 +263,10 @@ class MainActivity : ComponentActivity() {
                         // PERSONAL - CRIAR/EDITAR TREINO DO ALUNO
                         composable(
                             route = "editStudentsWorkout/{studentId}",
-                            arguments = listOf(
-                                navArgument("studentId") { type = NavType.StringType }
-                            )
-                        ) { backStackEntry ->
-                            val studentId = backStackEntry.arguments?.getString("studentId") ?: ""
-                            EditStudentsWorkoutScreen(
-                                navController = navController,
-                                studentId = studentId,
-                                appViewModel = vm
-                            )
+                            arguments = listOf(navArgument("studentId"){ type = NavType.StringType })
+                        ) {
+                            val studentId = it.arguments!!.getString("studentId")!!
+                            EditStudentsWorkoutScreen(navController, studentId, vm)
                         }
                     }
                 }
