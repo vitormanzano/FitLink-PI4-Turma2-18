@@ -51,6 +51,26 @@ namespace FitLink.Services.Personal
             await _personalRepository.InsertDocumentAsync(personal);
         }
 
+        public async Task<ResponsePersonalDto> Login(LoginPersonalDto loginPersonalDto)
+        {
+            var personalExist = await _personalRepository.GetPersonalByEmailAsync(loginPersonalDto.Email);
+
+            if (personalExist == null)
+                throw new UserNotFoundException();
+
+            var passwordMatch = _passwordHasher.Verify(loginPersonalDto.Password, personalExist.HashedPassword);
+
+            if (!passwordMatch)
+                throw new InvalidCredentialException("Credenciais inválidas!");
+
+            return new ResponsePersonalDto(
+                personalExist.Id,
+                personalExist.Name,
+                personalExist.Email,
+                personalExist.Phone,
+                personalExist.City);
+        }
+
         public async Task<IEnumerable<ResponsePersonalDto>> GetPersonalTrainersByCity(string city)
         {
             var personals = await _personalRepository.GetPersonalTrainersByCity(city);
@@ -65,27 +85,7 @@ namespace FitLink.Services.Personal
                
             return personalResponse;
         }
-
-        public async Task<ResponsePersonalDto> Login(LoginPersonalDto loginPersonalDto)
-        {
-            var personalExist = await _personalRepository.GetPersonalByEmailAsync(loginPersonalDto.Email);
-            
-            if (personalExist == null)
-                throw new UserNotFoundException();
-            
-            var passwordMatch = _passwordHasher.Verify(loginPersonalDto.Password, personalExist.HashedPassword);
-            
-            if (!passwordMatch)
-                throw new InvalidCredentialException("Credenciais inválidas!");
-            
-            return new ResponsePersonalDto(
-                personalExist.Id, 
-                personalExist.Name, 
-                personalExist.Email, 
-                personalExist.Phone, 
-                personalExist.City);
-        }
-
+     
         public async Task<ResponsePersonalDto> GetPersonalById(string personalId)
         {
             var personalExist = await _personalRepository.GetDocumentByIdAsync(personalId);

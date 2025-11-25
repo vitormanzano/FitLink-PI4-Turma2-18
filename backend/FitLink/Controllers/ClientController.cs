@@ -72,7 +72,7 @@ namespace FitLink.Controllers
             }
         }
 
-        [HttpGet("GetByCity/{city}")]
+        [HttpGet("getByCity/{city}")]
         public async Task<IActionResult> GetUsersByCity([FromRoute] string city)
         {
             try
@@ -83,6 +83,25 @@ namespace FitLink.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("getClientsByPersonalTrainer/{personalTrainerId}")]
+        public async Task<IActionResult> GetClientsByPersonalTrainer([FromRoute] string personalTrainerId)
+        {
+            try
+            {
+                var usersWithPersonal = await _clientService.GetClientsByPersonalId(personalTrainerId);
+                return Ok(usersWithPersonal);
+            }
+            catch (Exception ex)
+            {
+
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
             }
         }
 
@@ -129,6 +148,42 @@ namespace FitLink.Controllers
             {
                 await _clientService.LinkClientToPersonal(clientId, personalTrainerId);
                 return Ok("Usuário vinculado ao personal trainer com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
+            }
+        }
+
+        [HttpPatch("closeLinkWithPersonal/{clientId}")]
+        public async Task<IActionResult> CloseLinkWithPersonal([FromRoute] string clientId)
+        {
+            try
+            {
+                await _clientService.CloseLinkWithPersonal(clientId);
+                return Ok("Vínculo com o personal trainer encerrado com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
+            }
+        }
+
+        [HttpPatch("AddInformations/{clientId}")]
+        public async Task<IActionResult> AddInformations([FromRoute] string clientId, [FromBody] MoreInformations informations)
+        {
+            try
+            {
+                await _clientService.AddInformations(clientId, informations);
+                return Ok("Informações adicionada com sucesso!");
             }
             catch (Exception ex)
             {

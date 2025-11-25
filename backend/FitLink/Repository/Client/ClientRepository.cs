@@ -20,15 +20,30 @@ namespace FitLink.Repository.Client
 
         public async Task<IEnumerable<ClientModel>> GetClientsByCity(string city)
         {
-            var limitToReturn = 5;
-
             var filter = Builders<ClientModel>.Filter.Eq(p => p.City, city);
             return await _collection.Find(filter)
-                .Limit(limitToReturn)
+                .ToListAsync();
+        }
+
+
+        public async Task<IEnumerable<ClientModel>> GetClientsByPersonalId(string personalId)
+        {
+            var filter = Builders<ClientModel>.Filter.Eq(p => p.PersonalId, personalId);
+            return await _collection.Find(filter)
                 .ToListAsync();
         }
 
         public async Task LinkClientToPersonal(Expression<Func<ClientModel, bool>> filterExpression, UpdateDefinition<ClientModel> update)
+        {
+            await _collection.UpdateOneAsync(filterExpression, update);
+        }
+
+        public async Task CloseLinkWithPersonal(Expression<Func<ClientModel, bool>> filterExpression, UpdateDefinition<ClientModel> update)
+        {
+            await _collection.UpdateOneAsync(filterExpression, update);
+        }
+
+        public async Task AddInformations(Expression<Func<ClientModel, bool>> filterExpression, UpdateDefinition<ClientModel> update)
         {
             await _collection.UpdateOneAsync(filterExpression, update);
         }

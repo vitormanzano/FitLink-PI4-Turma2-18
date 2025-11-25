@@ -33,6 +33,7 @@ import br.edu.puc.fitlink.R
 import br.edu.puc.fitlink.auth.AuthViewModel
 import br.edu.puc.fitlink.data.model.RegisterClientDto
 import br.edu.puc.fitlink.data.model.RegisterPersonalDto
+import br.edu.puc.fitlink.ui.components.CityDropdownField
 import br.edu.puc.fitlink.validations.ClienteViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -47,6 +48,8 @@ fun SignUpScreen(navController: NavHostController) {
     var senha by remember { mutableStateOf("") }
     var senhaVisivel by remember { mutableStateOf(false) }
     var isProfessor by remember { mutableStateOf(false) }
+
+    var cidade by remember { mutableStateOf("") }
 
     var mostrarDialog by remember { mutableStateOf(false) }
     var mensagemDialog by remember { mutableStateOf("") }
@@ -123,6 +126,15 @@ fun SignUpScreen(navController: NavHostController) {
             InputField("Email", email, { email = it }, Icons.Default.Email, KeyboardType.Email)
             Spacer(modifier = Modifier.height(16.dp))
 
+            // ===== CIDADE (SP) =====
+            CityDropdownField(
+                value = cidade,
+                onValueChange = { cidade = it },
+                label = "Cidade (SP)"
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             if (isProfessor) {
                 InputField("CREF", cref, { cref = it }, Icons.Default.Badge)
                 Spacer(modifier = Modifier.height(16.dp))
@@ -192,20 +204,31 @@ fun SignUpScreen(navController: NavHostController) {
                 onClick = {
                     scope.launch {
                         carregando = true
-                        socketVm.validarEmail(email) { valido ->
-                            if (valido) {
-                                tipoMensagem = "success"
-                                mensagemDialog = "E-mail válido! Cadastrando..."
-                                mostrarDialog = true
 
-                                scope.launch {
-                                    delay(1000)
-                                    if (isProfessor) {
+                        if (isProfessor) {
+                            // ====== PERSONAL ======
+                            socketVm.validarSignUpPersonal(
+                                name = nome,
+                                email = email,
+                                password = senha,
+                                phone = telefone,
+                                city = cidade,
+                                cpf = cpf,
+                                cref = cref
+                            ) { valido, msgErro ->
+                                if (valido) {
+                                    tipoMensagem = "success"
+                                    mensagemDialog = "Dados válidos! Cadastrando personal..."
+                                    mostrarDialog = true
+
+                                    scope.launch {
+                                        delay(1000)
+
                                         val dto = RegisterPersonalDto(
                                             name = nome,
                                             email = email,
                                             password = senha,
-                                            city = "cidadeteste",
+                                            city = cidade,
                                             cpf = cpf,
                                             cref = cref,
                                             phone = telefone
@@ -219,18 +242,43 @@ fun SignUpScreen(navController: NavHostController) {
                                             else
                                                 "Erro: $msg"
                                             mostrarDialog = true
+
                                             scope.launch {
                                                 delay(1500)
                                                 if (ok) navController.navigate("login")
                                             }
                                         }
-                                    } else {
+                                    }
+                                } else {
+                                    carregando = false
+                                    tipoMensagem = "error"
+                                    mensagemDialog = msgErro ?: "Dados inválidos! Verifique os campos."
+                                    mostrarDialog = true
+                                }
+                            }
+                        } else {
+                            // ====== CLIENTE ======
+                            socketVm.validarSignUpClient(
+                                name = nome,
+                                email = email,
+                                password = senha,
+                                phone = telefone,
+                                city = cidade
+                            ) { valido, msgErro ->
+                                if (valido) {
+                                    tipoMensagem = "success"
+                                    mensagemDialog = "Dados válidos! Cadastrando..."
+                                    mostrarDialog = true
+
+                                    scope.launch {
+                                        delay(1000)
+
                                         val dto = RegisterClientDto(
                                             name = nome,
                                             email = email,
                                             password = senha,
                                             phone = telefone,
-                                            city = "cidadeteste"
+                                            city = cidade
                                         )
 
                                         authVm.register(dto) { ok, msg ->
@@ -241,18 +289,19 @@ fun SignUpScreen(navController: NavHostController) {
                                             else
                                                 "Erro: $msg"
                                             mostrarDialog = true
+
                                             scope.launch {
                                                 delay(1500)
                                                 if (ok) navController.navigate("login")
                                             }
                                         }
                                     }
+                                } else {
+                                    carregando = false
+                                    tipoMensagem = "error"
+                                    mensagemDialog = msgErro ?: "Dados inválidos! Verifique os campos."
+                                    mostrarDialog = true
                                 }
-                            } else {
-                                carregando = false
-                                tipoMensagem = "error"
-                                mensagemDialog = "E-mail inválido!"
-                                mostrarDialog = true
                             }
                         }
                     }

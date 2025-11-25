@@ -76,16 +76,16 @@ EndPoints:
 ### Aluno 
 Client significa aluno
 
-| Método   | Endpoint                                              | Descrição                                   |
-| ------   | ----------------------------------------------------- | --------------------------------------------|
-| `POST `  | `/Client/register`                                    | Realiza login do aluno                      |
-| `POST`   | `/Client/login`                                       | Cadastra um novo aluno                      |
-| `GET`    | `/Client/getById/{id}`                                | Busca um aluno por ID                       |
-| `GET`    | `/Client/getByCity/{city}`                            | Busca alunos por cidade                   | 
-| `PATCH`  | `/Client/update/{id}`                                 | Atualiza os dados de um aluno               |
-| `DELETE` | `/Client/delete/{id}`                                 | Deleta o registro de um aluno               |
-| `PATCH`  | `/Client/linkToPersonal/{userId}/{personalTrainerId}` | Faz o vínculo entre um aluno e um personal  |                                         
-|          |                                                       |                                             |
+| Método   | Endpoint                                                | Descrição                                    |
+| ------   | ------------------------------------------------------- | -------------------------------------------- |
+| `POST `  | `/Client/register`                                      | Realiza login do aluno                       |
+| `POST`   | `/Client/login`                                         | Cadastra um novo aluno                       |
+| `GET`    | `/Client/getById/{id}`                                  | Busca um aluno por ID                        |
+| `GET`    | `/Client/getByCity/{city}`                              | Busca alunos por cidade                      | 
+| `PATCH`  | `/Client/update/{id}`                                   | Atualiza os dados de um aluno                |
+| `DELETE` | `/Client/delete/{id}`                                   | Deleta o registro de um aluno                |
+| `PATCH`  | `/Client/linkToPersonal/{clientId}/{personalTrainerId}` | Faz o vínculo entre um aluno e um personal   |                                         
+| `PATCH`  | `/Client/closeLinkWithPersonal/{clientId}`              | Fecha o vínculo entre um aluno e um personal |            
 
 ### Personal 
 
@@ -98,6 +98,17 @@ Client significa aluno
 | `PATCH`  | `/Personal/update/{id}`                                 | Atualiza os dados de um personal            |
 | `DELETE` | `/Personal/delete/{id}`                                 | Deleta o registro de um personal            |
 |          |                                                         |                                             |
+
+### Treino 
+
+| Método   | Endpoint                                                | Descrição                                   |
+| ------   | --------------------------------------------------------| --------------------------------------------|
+| `POST `  | `/Train/register`                                       | Realiza o registro de um treino             |
+| `GET`    | `/Train/getById/{id}`                                   | Busca um treino por ID                      |
+| `GET`    | `/Train/getByClientId/{clientId}`                       | Busca um treino pelo id do aluno            | 
+| `PATCH`  | `/Train/getTrainsByPersonalId/{personalId}`             | Busca os treinos de um personal             |
+| `PATCH`  | `/Train/update/{trainId}`                               | Atualiza os dados de um treino              |
+| `DELETE` | `/Train/delete/{trainId}`                               | Deleta o registro de um treino              |
 
 ## Processo
 O processo escolhido foi o de cadastro de aluno, criar uma conta para um aluno.
@@ -129,3 +140,126 @@ java Servidor 3000
 
 5 - Certifique-se de que o MongoDB está em execução
 mongod
+
+## Testes
+<p>Testes para o processo de validação de dados do cadastro de um aluno</p>
+
+<table>
+  <tr>
+    <th>Cenário</th>
+    <th>Sequências INTERCLASSES para testar Cenário Solicitado</th>
+  </tr>
+
+  <tr>
+    <td>NORMAL</td>
+    <td>SignUpClientValidator().validate(nomeValido, emailValido, senhaValida, telefoneValido, cidadeValida)</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 1</td>
+    <td>SignUpClientValidator().validate(nomeInvalido, emailValido, senhaValida, telefoneValido, cidadeValida)</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 2</td>
+    <td>SignUpClientValidator().validate(nomeValido, emailInvalido, senhaValida, telefoneValido, cidadeValida)</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 3</td>
+    <td>SignUpClientValidator().validate(nomeValido, emailValido, senhaInvalida, telefoneValido, cidadeValida)</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 4</td>
+    <td>SignUpClientValidator().validate(nomeValido, emailValido, senhaValida, telefoneInvalido, cidadeValida)</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 5</td>
+    <td>SignUpClientValidator().validate(nomeValido, emailValido, senhaValida, telefoneValido, cidadeInvalida)</td>
+  </tr>
+</table>
+
+### Massa de dados
+<b>OBS: No resultado esperado ele deve retornar uma classe ValidationResult, onde tem um boolean se passou na validação ou não, e uma mensagem de erro. No resultado esperado/obtido será representado da seguinte forma: true, "". Sendo primeiro o boolean e o segundo a mensagem dele</b>
+
+<table>
+  <tr>
+    <th>Cenário</th>
+    <th>Nome</th>
+    <th>Email</th>
+    <th>Senha</th>
+    <th>Telefone</th>
+    <th>Cidade </th>
+    <th>Resultado esperado</th>
+    <th>Resultado obtido</th>
+  </tr>
+
+  <tr>
+    <td>NORMAL</td>
+    <td>vitor</td>
+    <td>vitor@gmail.com</td>
+    <td>vitor123</td>
+    <td>19983242758</td>
+    <td>São Paulo</td>
+    <td>true, ""</td>
+    <td>true, ""</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 1</td>
+    <td>vi</td>
+    <td>vitor@gmail.com</td>
+    <td>vitor123</td>
+    <td>19983242758</td>
+    <td>São Paulo</td>
+    <td>false, "Nome Precisa ter no mínimo 3 caracteres!"</td>
+    <td>false, "Nome Precisa ter no mínimo 3 caracteres!"</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 2</td>
+    <td>vitor</td>
+    <td>vitor.com</td>
+    <td>vitor123</td>
+    <td>19983242758</td>
+    <td>São Paulo</td>
+    <td>false, "Email mal formatado!"</td>
+    <td>false, "Email mal formatado!"</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 3</td>
+    <td>vitor</td>
+    <td>vitor@gmail.com</td>
+    <td>vi</td>
+    <td>19983242758</td>
+    <td>São Paulo</td>
+    <td>false, "Senha Precisa ter no mínimo 3 caracteres!"</td>
+    <td>false, "Senha Precisa ter no mínimo 3 caracteres!"</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 4</td>
+    <td>vitor</td>
+    <td>vitor@gmail.com</td>
+    <td>vitor123</td>
+    <td>1998324275</td>
+    <td>São Paulo</td>
+    <td>false, "Telefone precisa ter 11 caracteres!"</td>
+    <td>false, "Telefone precisa ter 11 caracteres!"</td>
+  </tr>
+
+  <tr>
+    <td>VARIAÇÃO 5</td>
+    <td>vitor</td>
+    <td>vitor@gmail.com</td>
+    <td>vitor123</td>
+    <td>1998324275</td>
+    <td>Sa</td>
+    <td>false, "Cidade Precisa ter no mínimo 3 caracteres!"</td>
+    <td>false, "Cidade Precisa ter no mínimo 3 caracteres!"</td>
+  </tr>
+</table>
+

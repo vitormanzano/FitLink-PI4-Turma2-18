@@ -26,12 +26,17 @@ import androidx.navigation.NavHostController
 import br.edu.puc.fitlink.R
 import br.edu.puc.fitlink.auth.AuthViewModel
 import br.edu.puc.fitlink.data.model.LoginClientDto
+import br.edu.puc.fitlink.data.model.LoginPersonalDto
 import br.edu.puc.fitlink.validations.ClienteViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(navController: NavHostController) {
+fun LoginScreen(
+    navController: NavHostController,
+    appViewModel: AppViewModel = viewModel(),               // 👈 adicionamos aqui
+    onLoginSuccess: (String, Boolean) -> Unit               // mantém seu callback
+) {
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
     var senhaVisivel by remember { mutableStateOf(false) }
@@ -107,7 +112,6 @@ fun LoginScreen(navController: NavHostController) {
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Email
             TextField(
                 value = email,
                 onValueChange = { email = it },
@@ -128,7 +132,6 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Senha
             TextField(
                 value = senha,
                 onValueChange = { senha = it },
@@ -206,24 +209,44 @@ fun LoginScreen(navController: NavHostController) {
             Button(
                 onClick = {
                     scope.launch {
-                        // 1️⃣ Valida via socket
                         socketVm.validarEmail(email) { valido ->
                             if (valido) {
                                 mensagemDialog = "E-mail válido! Entrando..."
                                 mostrarDialog = true
 
-                                // 2️⃣ Espera um pouquinho pra feedback visual
                                 scope.launch {
                                     delay(1000)
 
-                                    // 3️⃣ Agora faz login real via API
-                                    val dto = LoginClientDto(email, senha)
-                                    apiVm.login(dto) { ok, user, erro ->
-                                        if (ok && user != null) {
-                                            mensagemDialog = "Bem-vindo, ${user.name}!"
-                                            navController.navigate("home")
-                                        } else {
-                                            mensagemDialog = erro ?: "Falha no login. Verifique seus dados."
+                                    if (isProfessor) {
+                                        // PROFESSOR
+                                        apiVm.loginPersonal(LoginPersonalDto(email, senha)) { ok, user, erro ->
+                                            if (ok && user != null) {
+                                                mensagemDialog = "Bem-vindo, ${user.name}!"
+                                                mostrarDialog = true
+                                                // você sinaliza que é professor
+                                                onLoginSuccess(user.id, true)
+                                            } else {
+                                                mensagemDialog = erro ?: "Falha no login."
+                                                mostrarDialog = true
+                                            }
+                                        }
+                                    } else {
+                                        // ALUNO
+                                        apiVm.login(
+                                            LoginClientDto(email, senha),
+                                            appViewModel                      // 👈 passa AppViewModel pro AuthViewModel
+                                        ) { ok, user, erro ->
+                                            if (ok && user != null) {
+                                                mensagemDialog = "Bem-vindo, ${user.name}!"
+                                                mostrarDialog = true
+
+                                                // AppViewModel já teve o clientId setado dentro do AuthViewModel
+                                                // mas se quiser, mantém seu callback também:
+                                                onLoginSuccess(user.id, false)
+                                            } else {
+                                                mensagemDialog = erro ?: "Falha no login."
+                                                mostrarDialog = true
+                                            }
                                         }
                                     }
                                 }
@@ -234,6 +257,7 @@ fun LoginScreen(navController: NavHostController) {
                         }
                     }
                 },
+
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -245,7 +269,6 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ===== SEPARADOR =====
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Divider(color = Color.Black, thickness = 1.dp, modifier = Modifier.weight(1f))
                 Text("  ou  ", fontSize = 14.sp, color = Color.Black, textAlign = TextAlign.Center)
@@ -254,7 +277,6 @@ fun LoginScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ===== BOTÃO CADASTRO =====
             OutlinedButton(
                 onClick = { navController.navigate("signUp") },
                 modifier = Modifier
@@ -274,7 +296,6 @@ fun LoginScreen(navController: NavHostController) {
         }
     }
 
-    // ===== DIALOG =====
     if (mostrarDialog) {
         AlertDialog(
             onDismissRequest = { mostrarDialog = false },

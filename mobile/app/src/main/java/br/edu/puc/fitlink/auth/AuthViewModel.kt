@@ -4,14 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.edu.puc.fitlink.data.model.*
 import br.edu.puc.fitlink.data.remote.RetrofitInstance
+import br.edu.puc.fitlink.ui.screens.AppViewModel
 import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
 
+    // --------- CLIENTE (ALUNO) ---------
+
     fun register(dto: RegisterClientDto, onResult: (ok: Boolean, msg: String) -> Unit) {
         viewModelScope.launch {
             try {
-                val resp = RetrofitInstance.clientApi.register(dto) // <-- clientApi
+                val resp = RetrofitInstance.clientApi.register(dto)
                 if (resp.isSuccessful) {
                     val body = resp.body()?.string() ?: "Cadastro realizado!"
                     onResult(true, body)
@@ -24,12 +27,24 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    fun login(dto: LoginClientDto, onResult: (ok: Boolean, user: ClientResponseDto?, erro: String?) -> Unit) {
+    fun login(
+        dto: LoginClientDto,
+        appViewModel: AppViewModel,            // 👈 ADICIONADO AQUI
+        onResult: (ok: Boolean, user: ClientResponseDto?, erro: String?) -> Unit
+    ) {
         viewModelScope.launch {
             try {
-                val resp = RetrofitInstance.clientApi.login(dto) // <-- clientApi
+                val resp = RetrofitInstance.clientApi.login(dto)
+
                 if (resp.isSuccessful) {
-                    onResult(true, resp.body(), null)
+                    val body = resp.body()
+
+                    if (body != null) {
+                        // 👇 SALVA O CLIENT ID NO AppViewModel
+                        appViewModel.updateClientId(body.id)
+                    }
+
+                    onResult(true, body, null)
                 } else {
                     onResult(false, null, resp.errorBody()?.string() ?: "Login inválido")
                 }
@@ -39,17 +54,38 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    // --------- PERSONAL (PROFESSOR) ---------
+
     fun registerPersonal(dto: RegisterPersonalDto, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             try {
-                val response = RetrofitInstance.personalApi.register(dto) // <-- personalApi
-                if (response.isSuccessful){
+                val response = RetrofitInstance.personalApi.register(dto)
+                if (response.isSuccessful) {
                     val body = response.body()?.string() ?: "Cadastro realizado!"
-                    onResult(true, body)}
-                else
+                    onResult(true, body)
+                } else {
                     onResult(false, response.errorBody()?.string() ?: "Erro no cadastro")
+                }
             } catch (e: Exception) {
                 onResult(false, e.message ?: "Falha de rede")
+            }
+        }
+    }
+
+    fun loginPersonal(
+        dto: LoginPersonalDto,
+        onResult: (ok: Boolean, user: PersonalResponseDto?, erro: String?) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val resp = RetrofitInstance.personalApi.loginPersonal(dto)
+                if (resp.isSuccessful) {
+                    onResult(true, resp.body(), null)
+                } else {
+                    onResult(false, null, resp.errorBody()?.string() ?: "Login inválido")
+                }
+            } catch (e: Exception) {
+                onResult(false, null, e.message ?: "Falha de rede")
             }
         }
     }

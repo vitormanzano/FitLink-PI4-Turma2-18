@@ -6,6 +6,8 @@ using FitLink.Services.Client;
 using FitLink.ServicesExtensions;
 using FitLink.Repository.Train;
 using FitLink.Services.Train;
+using FitLink.Repository.Message;
+using FitLink.Services.Message;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,10 @@ builder.Services.AddScoped<IPersonalService, PersonalService>();
 
 builder.Services.AddScoped<ITrainRepository, TrainRepository>();
 builder.Services.AddScoped<ITrainService, TrainService>();
+
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+
 
 var app = builder.Build();
 
