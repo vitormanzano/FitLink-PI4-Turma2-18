@@ -145,7 +145,7 @@ fun StudentsDetailsScreen(
 
                 // Editar treino
                 OutlinedButton(
-                    onClick = { navController.navigate("studentsWorkout") },
+                    onClick = { navController.navigate("studentsWorkout/$clientId") },
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = FitBlack),
                     border = ButtonDefaults.outlinedButtonBorder.copy(width = 1.dp),

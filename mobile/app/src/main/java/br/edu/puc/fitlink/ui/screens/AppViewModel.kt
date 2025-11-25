@@ -11,6 +11,7 @@ import br.edu.puc.fitlink.data.model.ClientResponseDto
 import br.edu.puc.fitlink.data.model.MetricsDto
 import br.edu.puc.fitlink.data.model.MoreInformationsDto
 import br.edu.puc.fitlink.data.model.PersonalResponseDto
+import br.edu.puc.fitlink.data.model.RegisterExerciseDto
 import br.edu.puc.fitlink.data.model.ResponseTrainDto
 import br.edu.puc.fitlink.data.remote.ApiClient
 import br.edu.puc.fitlink.data.remote.RetrofitInstance
@@ -18,7 +19,10 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 import br.edu.puc.fitlink.data.model.RegisterMessageDto
+import br.edu.puc.fitlink.data.model.RegisterSetDto
+import br.edu.puc.fitlink.data.model.RegisterTrainDto
 import br.edu.puc.fitlink.data.model.ResponseMessageDto
+import br.edu.puc.fitlink.data.model.UpdateTrainDto
 
 // ----------------- MODELOS DE UI -----------------
 
@@ -478,6 +482,197 @@ class MyStudentsViewModel : ViewModel() {
     }
 }
 
+class StudentsWorkoutViewModel : ViewModel() {
+
+    var workoutGroups by mutableStateOf<List<WorkoutGroup>>(emptyList())
+        private set
+
+    var isLoading by mutableStateOf(false)
+        private set
+
+    var errorMessage by mutableStateOf<String?>(null)
+        private set
+
+    // treino completo vindo do backend (para poder editar)
+    private var currentTrain: ResponseTrainDto? = null
+
+    fun loadWorkoutsForStudent(clientId: String) {
+        if (clientId.isBlank()) return
+
+        viewModelScope.launch {
+            isLoading = true
+            errorMessage = null
+
+            try {
+                val train = ApiClient.trainApi.getTrainByClientId(clientId)
+
+                currentTrain = train
+                // usa a MESMA extensão que você já tem no AppViewModel:
+                // private fun ResponseTrainDto.toWorkoutGroup(): WorkoutGroup
+                workoutGroups = listOf(train.toWorkoutGroup())
+
+            } catch (e: Exception) {
+                when (e) {
+                    is HttpException -> {
+                        if (e.code() == 404) {
+                            // sem treino ainda
+                            workoutGroups = emptyList()
+                            errorMessage = null
+                        } else {
+                            errorMessage = "Erro ${e.code()} ao carregar treinos."
+                            workoutGroups = emptyList()
+                        }
+                    }
+                    is IOException -> {
+                        errorMessage = "Falha de conexão com o servidor."
+                        workoutGroups = emptyList()
+                    }
+                    else -> {
+                        errorMessage = "Erro inesperado: ${e.message}"
+                        workoutGroups = emptyList()
+                    }
+                }
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    fun removeExercise(group: WorkoutGroup, item: WorkoutItem) {
+        val train = currentTrain ?: return
+
+        viewModelScope.launch {
+            isLoading = true
+            errorMessage = null
+
+            try {
+                // 1. monta a lista de exercícios SEM o que foi clicado
+                val filteredExercises = train.exercises.filterNot { exercise ->
+                    val setsCount = exercise.sets.size
+                    val reps = exercise.sets.firstOrNull()?.numberOfRepetitions
+
+                    val seriesText = if (reps != null)
+                        "$setsCount séries de $reps repetições"
+                    else
+                        "$setsCount séries"
+
+                    exercise.name == item.name && seriesText == item.series
+                }
+
+                // se não removeu nada, nem tenta atualizar
+                if (filteredExercises.size == train.exercises.size) {
+                    isLoading = false
+                    return@launch
+                }
+
+                // 2. converte para DTO de update (RegisterExerciseDto / RegisterSetDto)
+                val updateExercises = filteredExercises.map { ex ->
+                    RegisterExerciseDto(
+                        name = ex.name,
+                        instructions = ex.instructions,
+                        sets = ex.sets.map { s ->
+                            RegisterSetDto(
+                                number = s.number,
+                                numberOfRepetitions = s.numberOfRepetitions,
+                                weight = s.weight
+                            )
+                        }
+                    )
+                }
+
+                val updateDto = UpdateTrainDto(
+                    name = train.name,                 // mantém o nome
+                    clientId = train.clientId,         // mantém cliente
+                    personalId = train.personalId,     // mantém personal
+                    exercises = updateExercises        // exercícios atualizados
+                )
+
+                // 3. chama o PATCH no backend
+                val resp = ApiClient.trainApi.updateTrain(train.id, updateDto)
+
+                if (!resp.isSuccessful) {
+                    throw Exception(resp.errorBody()?.string() ?: "Erro ao atualizar treino")
+                }
+
+                // 4. atualiza estado local com a resposta do backend
+                val updatedTrain = resp.body()!!
+                currentTrain = updatedTrain
+                workoutGroups = listOf(updatedTrain.toWorkoutGroup())
+
+            } catch (e: Exception) {
+                errorMessage = e.message ?: "Erro ao remover exercício"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+}
+
+class EditStudentsWorkoutViewModel : ViewModel() {
+
+    var isSaving by mutableStateOf(false)
+        private set
+
+    var errorMessage by mutableStateOf<String?>(null)
+        private set
+
+    var successMessage by mutableStateOf<String?>(null)
+        private set
+
+    fun salvarTreino(
+        studentId: String,
+        personalId: String,
+        diaSemana: String,
+        exercicio: String,
+        series: Int,
+        repeticoes: Int,
+        onFinished: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch {
+            isSaving = true
+            errorMessage = null
+            successMessage = null
+
+            try {
+
+                val dto = RegisterTrainDto(
+                    name = "Treino $diaSemana",
+                    clientId = studentId,
+                    personalId = personalId,
+                    exercises = listOf(
+                        RegisterExerciseDto(
+                            name = exercicio,
+                            instructions = "",
+                            sets = List(series) { index ->
+                                RegisterSetDto(
+                                    number = index + 1,
+                                    numberOfRepetitions = repeticoes,
+                                    weight = 0.0
+                                )
+                            }
+                        )
+                    )
+                )
+
+                val resp = ApiClient.trainApi.register(dto)
+
+                if (!resp.isSuccessful) {
+                    throw Exception(resp.errorBody()?.string() ?: "Erro ao registrar treino")
+                }
+
+                successMessage = "Treino salvo com sucesso!"
+                onFinished(true)
+
+            } catch (e: Exception) {
+                errorMessage = e.message ?: "Erro ao salvar treino"
+                onFinished(false)
+
+            } finally {
+                isSaving = false
+            }
+        }
+    }
+}
 
 // ----------------- EXTENSÃO PARA CONVERTER RESPONSETRAINDTO -----------------
 

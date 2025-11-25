@@ -45,9 +45,10 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val vm: AppViewModel = viewModel()
 
-                // Rotas do aluno
+                // Rotas base (sem parâmetros) que mostram bottom bar do aluno
                 val bottomRoutesAluno = remember { setOf("home", "search", "profile") }
-                // Rotas do personal
+
+                // Rotas base (sem parâmetros) que mostram bottom bar do personal
                 val bottomRoutesPersonal = remember {
                     setOf(
                         "newStudents",
@@ -62,16 +63,19 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
+                // Normaliza rota pra comparar (studentsWorkout/123 -> studentsWorkout)
+                val currentBaseRoute = currentRoute?.substringBefore("/")
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = Color.White,
                     bottomBar = {
                         when {
-                            vm.isProfessor && currentRoute in bottomRoutesPersonal -> {
+                            vm.isProfessor && currentBaseRoute in bottomRoutesPersonal -> {
                                 BottomBarPersonal(
-                                    current = currentRoute ?: "newStudents",
+                                    current = currentBaseRoute ?: "newStudents",
                                     onNavigate = { dest ->
-                                        if (dest != currentRoute) {
+                                        if (dest != currentBaseRoute) {
                                             navController.navigate(dest) {
                                                 popUpTo("newStudents") { inclusive = false }
                                                 launchSingleTop = true
@@ -81,11 +85,11 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
-                            !vm.isProfessor && currentRoute in bottomRoutesAluno -> {
+                            !vm.isProfessor && currentBaseRoute in bottomRoutesAluno -> {
                                 BottomBar(
-                                    current = currentRoute ?: "home",
+                                    current = currentBaseRoute ?: "home",
                                     onNavigate = { dest ->
-                                        if (dest != currentRoute) {
+                                        if (dest != currentBaseRoute) {
                                             navController.navigate(dest) {
                                                 popUpTo("home") { inclusive = false }
                                                 launchSingleTop = true
@@ -155,7 +159,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // EDITAR PERFIL (ALUNO) – agora recebendo o AppViewModel correto
+                        // EDITAR PERFIL (ALUNO)
                         composable("editProfile") {
                             EditProfileScreen(
                                 onBack = { navController.popBackStack() },
@@ -176,7 +180,7 @@ class MainActivity : ComponentActivity() {
                             PersonalDetailScreen(
                                 personalId = personalId,
                                 onBack = { navController.popBackStack() },
-                                appViewModel = vm   // <-- passa o msm AppViewModel usado no app todo
+                                appViewModel = vm
                             )
                         }
 
@@ -189,6 +193,7 @@ class MainActivity : ComponentActivity() {
                                 appViewModel = vm
                             )
                         }
+
                         // PERSONAL - MEUS ALUNOS
                         composable("myStudents") {
                             MyStudentsScreen(
@@ -206,7 +211,6 @@ class MainActivity : ComponentActivity() {
                                 navArgument("messageId") { type = NavType.StringType }
                             )
                         ) { backStackEntry ->
-
                             val clientId = backStackEntry.arguments!!.getString("clientId")!!
                             val messageId = backStackEntry.arguments!!.getString("messageId")!!
                             val personalId = vm.clientId!!   // personal logado
@@ -222,7 +226,7 @@ class MainActivity : ComponentActivity() {
                         // PERSONAL - DETALHES DO ALUNO
                         composable(
                             "studentsDetails/{clientId}",
-                            arguments = listOf(navArgument("clientId"){ type = NavType.StringType })
+                            arguments = listOf(navArgument("clientId") { type = NavType.StringType })
                         ) { entry ->
                             val clientId = entry.arguments!!.getString("clientId")!!
                             StudentsDetailsScreen(
@@ -242,13 +246,33 @@ class MainActivity : ComponentActivity() {
                         }
 
                         // PERSONAL - VER TREINO DO ALUNO
-                        composable("studentsWorkout") {
-                            StudentsWorkoutScreen(navController)
+                        composable(
+                            route = "studentsWorkout/{studentId}",
+                            arguments = listOf(
+                                navArgument("studentId") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val studentId =
+                                backStackEntry.arguments?.getString("studentId") ?: ""
+                            StudentsWorkoutScreen(
+                                navController = navController,
+                                studentId = studentId
+                            )
                         }
 
                         // PERSONAL - CRIAR/EDITAR TREINO DO ALUNO
-                        composable("editStudentsWorkout") {
-                            EditStudentsWorkoutScreen(navController)
+                        composable(
+                            route = "editStudentsWorkout/{studentId}",
+                            arguments = listOf(
+                                navArgument("studentId") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val studentId = backStackEntry.arguments?.getString("studentId") ?: ""
+                            EditStudentsWorkoutScreen(
+                                navController = navController,
+                                studentId = studentId,
+                                appViewModel = vm
+                            )
                         }
                     }
                 }

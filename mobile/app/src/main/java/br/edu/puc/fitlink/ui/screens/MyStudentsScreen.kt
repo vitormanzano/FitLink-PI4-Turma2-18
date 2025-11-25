@@ -24,13 +24,14 @@ import br.edu.puc.fitlink.ui.theme.FitBlack
 @Composable
 fun MyStudentsScreen(
     appViewModel: AppViewModel,
-    onAlunoClick: (Aluno) -> Unit = {},
+    onAlunoClick: (Aluno) -> Unit = {},           // <- callback opcional
     vm: MyStudentsViewModel = viewModel()
 ) {
     val alunos = vm.alunos
     val isLoading = vm.isLoading
     val error = vm.errorMessage
 
+    // appViewModel.clientId = ID do personal logado
     val personalId = appViewModel.clientId
 
     LaunchedEffect(personalId) {
@@ -47,6 +48,7 @@ fun MyStudentsScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+
             when {
                 isLoading -> {
                     Box(
@@ -83,7 +85,10 @@ fun MyStudentsScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(alunos) { aluno ->
-                            AlunoItem(aluno) { onAlunoClick(aluno) }
+                            AlunoItem(
+                                aluno = aluno,
+                                onClick = { onAlunoClick(aluno) } // <- callback para navegar
+                            )
                         }
                     }
                 }
@@ -133,3 +138,4 @@ fun AlunoItem(
         }
     }
 }
+

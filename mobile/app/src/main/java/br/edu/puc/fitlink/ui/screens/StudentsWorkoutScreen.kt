@@ -3,6 +3,7 @@ package br.edu.puc.fitlink.ui.screens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
@@ -14,30 +15,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import br.edu.puc.fitlink.ui.components.TopBar
 import br.edu.puc.fitlink.ui.theme.FitBlack
 import br.edu.puc.fitlink.ui.theme.FitYellow
 
-data class Exercise(val name: String, val series: Int, val repetitions: Int)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StudentsWorkoutScreen(navController: NavHostController) {
-    var mondayExercises by remember { mutableStateOf(
-        mutableListOf(
-            Exercise("Agachamento", 3, 10),
-            Exercise("Supino", 3, 12),
-            Exercise("Remada", 3, 15)
-        )
-    ) }
+fun StudentsWorkoutScreen(
+    navController: NavHostController,
+    studentId: String,                         // <- id do aluno
+    vm: StudentsWorkoutViewModel = viewModel() // <- nosso novo VM
+) {
 
-    var tuesdayExercises by remember { mutableStateOf(
-        mutableListOf(
-            Exercise("Leg Press", 3, 10),
-            Exercise("Desenvolvimento", 3, 12)
-        )
-    ) }
+    LaunchedEffect(studentId) {
+        vm.loadWorkoutsForStudent(studentId)
+    }
 
     Scaffold(
         topBar = {
@@ -48,7 +42,9 @@ fun StudentsWorkoutScreen(navController: NavHostController) {
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navController.navigate("editStudentsWorkout") },
+                onClick = {
+                    navController.navigate("editStudentsWorkout/$studentId")
+                },
                 containerColor = FitYellow
             ) {
                 Text("+", color = FitBlack, fontWeight = FontWeight.Bold)
@@ -56,36 +52,78 @@ fun StudentsWorkoutScreen(navController: NavHostController) {
         }
     ) { innerPadding ->
 
-        LazyColumn(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp)
-        ) {
-            item {
-                DaySection(day = "Segunda-feira", exercises = mondayExercises) {
-                    mondayExercises.remove(it)
+        when {
+            vm.isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
             }
 
-            item {
-                DaySection(day = "Terça-feira", exercises = tuesdayExercises) {
-                    tuesdayExercises.remove(it)
+            vm.errorMessage != null -> {
+                Box(
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(vm.errorMessage!!, color = MaterialTheme.colorScheme.error)
                 }
             }
 
-            item {
-                Spacer(Modifier.height(80.dp)) // espaço para o FAB
+            vm.workoutGroups.isEmpty() -> {
+                Box(
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Esse aluno ainda não possui treinos cadastrados.")
+                }
+            }
+
+            else -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .padding(horizontal = 16.dp)
+                ) {
+                    items(vm.workoutGroups) { group ->
+                        WorkoutGroupSection(
+                            group = group,
+                            onDelete = { item ->
+                                vm.removeExercise(group, item)
+                            }
+                        )
+                        Spacer(Modifier.height(16.dp))
+                    }
+
+                    item {
+                        Spacer(Modifier.height(80.dp)) // espaço pro FAB
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun DaySection(day: String, exercises: List<Exercise>, onDelete: (Exercise) -> Unit) {
-    Text(day, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp))
+private fun WorkoutGroupSection(
+    group: WorkoutGroup,
+    onDelete: (WorkoutItem) -> Unit
+) {
+    Text(
+        group.title,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(vertical = 8.dp)
+    )
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        exercises.forEach { exercise ->
+        group.items.forEach { item ->
             Card(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -105,8 +143,8 @@ fun DaySection(day: String, exercises: List<Exercise>, onDelete: (Exercise) -> U
                     Spacer(Modifier.width(12.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(exercise.name, fontWeight = FontWeight.Bold, color = FitBlack)
-                        Text("${exercise.series} séries de ${exercise.repetitions} repetições")
+                        Text(item.name, fontWeight = FontWeight.Bold, color = FitBlack)
+                        Text(item.series) // ex: "3 séries de 10 repetições"
                     }
 
                     Icon(
@@ -115,7 +153,7 @@ fun DaySection(day: String, exercises: List<Exercise>, onDelete: (Exercise) -> U
                         tint = Color.Red,
                         modifier = Modifier
                             .size(24.dp)
-                            .clickable { onDelete(exercise) }
+                            .clickable { onDelete(item) }
                     )
                 }
             }
