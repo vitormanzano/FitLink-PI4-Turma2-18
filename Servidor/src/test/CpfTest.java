@@ -56,7 +56,7 @@ public class CpfTest {
 
         ValidationResult result =  CpfValidator.validate(cpf);
         assertEquals(false, result.isValid());
-        assertEquals("CPF deve ter 11 caracteres!", CpfValidator.validate(cpf).getMessage());
+        assertEquals("CPF deve ter 11 caracteres! Digite apenas números!", CpfValidator.validate(cpf).getMessage());
     }
 
     //04
@@ -76,7 +76,7 @@ public class CpfTest {
 
         ValidationResult result =  CpfValidator.validate(cpf);
         assertEquals(false, result.isValid());
-        assertEquals("CPF deve ter 11 caracteres!", CpfValidator.validate(cpf).getMessage());
+        assertEquals("CPF deve ter 11 caracteres! Digite apenas números!", CpfValidator.validate(cpf).getMessage());
     }
 
     //06

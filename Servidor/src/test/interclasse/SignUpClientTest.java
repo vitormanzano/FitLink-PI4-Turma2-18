@@ -69,7 +69,7 @@ public class SignUpClientTest {
                         "São Paulo");
 
         assertEquals(false, result.isValid());
-        assertEquals("Telefone precisa ter 11 caracteres!", result.getMessage());
+        assertEquals("Telefone precisa ter 11 caracteres! Digite apenas números!", result.getMessage());
     }
 
     @Test
