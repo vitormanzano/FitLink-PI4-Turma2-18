@@ -27,17 +27,17 @@ namespace FitLink.Services.Message
 
         public async Task<ResponseMessageDto> Register(RegisterMessageDto registerMessageDto)
         {
-            var clientExist = _clientRepository.GetDocumentByIdAsync(registerMessageDto.ClientId);
+            var clientExist = await _clientRepository.GetDocumentByIdAsync(registerMessageDto.ClientId);
 
             if (clientExist is null)
                 throw new UserNotFoundException("Cliente não encontrado!");
             
-            var personalExist = _personalRepository.GetDocumentByIdAsync(registerMessageDto.PersonalId);
+            var personalExist = await _personalRepository.GetDocumentByIdAsync(registerMessageDto.PersonalId);
 
             if (personalExist is null)
                 throw new UserNotFoundException("Personal não encontrado!");
 
-            if (!string.IsNullOrWhiteSpace(client.PersonalId))
+            if (!string.IsNullOrWhiteSpace(clientExist.PersonalId))
                 throw new Exception("Aluno já está vinculado a um personal trainer!");
 
             var messageModel = new MessageModel
