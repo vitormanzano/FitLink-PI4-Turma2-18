@@ -33,6 +33,8 @@ namespace FitLink.Repository.Client
                 .ToListAsync();
         }
 
+
+
         public async Task LinkClientToPersonal(Expression<Func<ClientModel, bool>> filterExpression, UpdateDefinition<ClientModel> update)
         {
             await _collection.UpdateOneAsync(filterExpression, update);
@@ -46,6 +48,16 @@ namespace FitLink.Repository.Client
         public async Task AddInformations(Expression<Func<ClientModel, bool>> filterExpression, UpdateDefinition<ClientModel> update)
         {
             await _collection.UpdateOneAsync(filterExpression, update);
+        }
+
+        public async Task<ClientModel> GetClientConnectedWithPersonal(string clientId, string personalTrainerId)
+        {
+            var filter = Builders<ClientModel>.Filter.And(
+                            Builders<ClientModel>.Filter.Eq(p => p.Id.ToString(), clientId),
+                            Builders<ClientModel>.Filter.Eq(p => p.PersonalId, personalTrainerId)
+                        );
+            return await _collection.Find(filter).FirstOrDefaultAsync();
+                
         }
     }
 }

@@ -211,5 +211,24 @@ namespace FitLink.Services.Client
                     .Set(u => u.Goals, moreInformations.Goals)
                     .Set(u => u.Metrics, moreInformations.Metrics));
         }
+
+        public async Task<bool> VerifyIfIsLinkedToPersonal(string clientId, string personalTrainerId)
+        {
+            var client = await _clientRepository.GetDocumentByIdAsync(clientId);
+
+            if (client is null)
+                throw new UserNotFoundException();
+
+            var personal = await _clientRepository.GetDocumentByIdAsync(personalTrainerId);
+
+            if (personal is null)
+                throw new UserNotFoundException("Personal não encontrado!");
+
+            var clientWithPersonal = await _clientRepository.GetClientConnectedWithPersonal(clientId, personalTrainerId);
+
+            if (clientWithPersonal == null)
+                return false;
+            return true;
+        }
     }
 }
