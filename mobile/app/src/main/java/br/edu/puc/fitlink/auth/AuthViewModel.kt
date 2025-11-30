@@ -29,7 +29,7 @@ class AuthViewModel : ViewModel() {
 
     fun login(
         dto: LoginClientDto,
-        appViewModel: AppViewModel,            // 👈 ADICIONADO AQUI
+        appViewModel: AppViewModel,            // <- ADICIONADO AQUI
         onResult: (ok: Boolean, user: ClientResponseDto?, erro: String?) -> Unit
     ) {
         viewModelScope.launch {
@@ -40,7 +40,7 @@ class AuthViewModel : ViewModel() {
                     val body = resp.body()
 
                     if (body != null) {
-                        // 👇 SALVA O CLIENT ID NO AppViewModel
+                        // \/ SALVA O CLIENT ID NO AppViewModel
                         appViewModel.updateClientId(body.id)
                     }
 
