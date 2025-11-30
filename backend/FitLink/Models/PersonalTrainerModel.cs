@@ -14,7 +14,10 @@ namespace FitLink.Models
         public string City { get; private set; }
         public string Cpf { get; private set; }
         public string Cref { get; private set; }
-              
+        public string? AboutMe { get; private set; }
+        public string? Specialization { get; private set; }
+        public string? Experience { get; private set; }
+
         public PersonalTrainerModel() { } // Construtor vazio para o MongoDB
 
         public PersonalTrainerModel(string name, string email, string hashedPassword, string phone, string city, string cpf, string cref)
@@ -27,6 +30,9 @@ namespace FitLink.Models
             City = city;
             Cpf = cpf;
             Cref = cref;
+            AboutMe = null;
+            Specialization = null;
+            Experience = null;
         }
     }
 }

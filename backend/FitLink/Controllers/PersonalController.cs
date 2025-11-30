@@ -121,5 +121,23 @@ namespace FitLink.Controllers
                 };
             }
         }
+
+        [HttpPatch("addMoreInformations/{personalId}")]
+        public async Task<IActionResult> AddMoreInformations([FromRoute] string personalId, [FromBody] MoreInformationsPersonalDto moreInformationsPersonalDto)
+        {
+            try
+            {
+                await _personalService.AddMoreInformations(personalId, moreInformationsPersonalDto);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
+            }
+        }
     }
 }

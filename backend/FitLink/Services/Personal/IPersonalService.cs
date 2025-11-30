@@ -11,5 +11,6 @@ namespace FitLink.Services.Personal
         Task<ResponsePersonalDto> GetPersonalById(string personalId);
         Task<ResponsePersonalDto> Update(string personalId, UpdatePersonalDto updatePersonalDto);
         Task Delete(string personalId);
+        Task AddMoreInformations(string personalId, MoreInformationsPersonalDto moreInformationsPersonalDto);
     }
 }
