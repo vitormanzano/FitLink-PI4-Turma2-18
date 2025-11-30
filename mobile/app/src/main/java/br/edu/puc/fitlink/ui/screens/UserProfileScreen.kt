@@ -129,14 +129,9 @@ fun UserProfileScreen(
                 SectionTitle("Objetivos")
                 Text(
                     text = state.objetivoTag.ifBlank { "Defina seus objetivos na edição de perfil." },
-                    fontWeight = FontWeight.ExtraBold
+                    fontWeight = FontWeight.Normal
                 )
-                // Se quiser, você pode tirar essa descrição, já que o back só tem Goals
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = state.objetivoTag.ifBlank { "" },
-                    style = MaterialTheme.typography.bodyMedium
-                )
+
                 Spacer(Modifier.height(24.dp))
 
                 // MEDIDAS

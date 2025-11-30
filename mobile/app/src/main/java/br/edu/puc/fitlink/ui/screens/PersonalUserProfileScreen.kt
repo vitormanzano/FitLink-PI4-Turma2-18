@@ -116,7 +116,11 @@ fun PersonalUserProfileScreen(
 }
 
 @Composable
-private fun PersonalProfileView(personal: PersonalResponseDto, innerPadding: PaddingValues, onEdit: () -> Unit) {
+private fun PersonalProfileView(
+    personal: PersonalResponseDto,
+    innerPadding: PaddingValues,
+    onEdit: () -> Unit
+) {
     Column(
         Modifier
             .padding(innerPadding)
@@ -125,47 +129,101 @@ private fun PersonalProfileView(personal: PersonalResponseDto, innerPadding: Pad
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         Spacer(Modifier.height(12.dp))
 
+        // FOTO
         Image(
             painter = painterResource(R.drawable.ic_male),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(110.dp)
+                .size(120.dp)
                 .clip(CircleShape)
         )
 
         Spacer(Modifier.height(12.dp))
 
-        Text(personal.name ?: "", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        Text(personal.specialty ?: "Personal Trainer")
-        if (!personal.city.isNullOrBlank()) Text("Atende em ${personal.city}")
+        // NOME
+        Text(
+            text = personal.name ?: "",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+
+        // ESPECIALIZAÇÃO
+        Text(
+            text = personal.specialty ?: "Personal Trainer",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray
+        )
+
+        // CIDADE
+        personal.city?.let {
+            if (it.isNotBlank()) {
+                Text(
+                    text = "Atende em $it",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
+        }
 
         Spacer(Modifier.height(16.dp))
 
+        // BOTÃO
         Button(
             onClick = onEdit,
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(30.dp),
             colors = ButtonDefaults.buttonColors(containerColor = FitYellow)
         ) {
             Text("Editar Perfil", color = FitBlack)
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(24.dp))
 
-        SectionTitle("Sobre")
-        Text(personal.bio ?: "Sem descrição", modifier = Modifier.padding(top = 8.dp))
+        // ==== CARDS DE INFORMAÇÕES ====
+        ProfileInfoCard(
+            title = "Sobre",
+            content = personal.bio ?: "Sem descrição"
+        )
 
-        Spacer(Modifier.height(12.dp))
-        SectionTitle("Especialização")
-        Text(personal.specialty ?: "Não informada")
+        ProfileInfoCard(
+            title = "Especialização",
+            content = personal.specialty ?: "Não informada"
+        )
 
-        Spacer(Modifier.height(12.dp))
-        SectionTitle("Experiência")
-        Text(personal.experience ?: "Não informada")
+        ProfileInfoCard(
+            title = "Experiência",
+            content = personal.experience ?: "Não informada"
+        )
     }
 }
+
+@Composable
+fun ProfileInfoCard(title: String, content: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFFF5F5F5))
+            .padding(16.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = content,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.DarkGray
+        )
+    }
+}
+
 
 
 
