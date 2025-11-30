@@ -13,6 +13,7 @@ public class ExerciseValidator {
 
         if (sets.lenght == 0) return new ValidationResult(false, "Quantidade de sets inválida");
 
+        //chama o validador de set pra cada set recebido no exercício
         for (ResponseSetDto s : sets) {
             ValidationResult result = SetValidator.validate(s.number, s.numberOfRepetitions, s.weight);
         }

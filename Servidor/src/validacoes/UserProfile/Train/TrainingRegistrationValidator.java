@@ -19,6 +19,9 @@ public class TrainingRegistrationvalidator {
                 if (exercicios == null || exercicios.isEmpty())
                         return new ValidationResult(false, "Nenhum exercício informado");
 
+                //chama o validador de exercício para cada exercício no treino
+                //e consequentemente chama o validador de set para cada set no exercício
+                //assim validando tudo de forma recursiva
                 for (ExerciseDto ex: exercicios){
                         ValidationResult result = ExerciseValidator.validate(ex.name, ex.instructions, ex.sets);
                 };
