@@ -86,6 +86,12 @@ interface ClientApi {
         @Path("personalTrainerId") personalId: String
     ): Response<List<ClientResponseDto>>
 
+    // ---------- VERIFY LINK ----------
+    @GET("Client/verifyIfIsLinkedToPersonal/{clientId}/{personalTrainerId}")
+    suspend fun verifyIfIsLinkedToPersonal(
+        @Path("clientId") clientId: String,
+        @Path("personalTrainerId") personalId: String
+    ): Response<Boolean>
 }
 
 
