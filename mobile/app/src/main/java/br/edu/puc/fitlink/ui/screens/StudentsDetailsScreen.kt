@@ -1,7 +1,9 @@
 package br.edu.puc.fitlink.ui.screens
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -26,6 +28,7 @@ import br.edu.puc.fitlink.data.remote.RetrofitInstance
 import br.edu.puc.fitlink.ui.components.TopBar
 import br.edu.puc.fitlink.ui.theme.FitBlack
 import br.edu.puc.fitlink.ui.theme.FitYellow
+import kotlinx.coroutines.launch
 
 @Composable
 fun StudentsDetailsScreen(
@@ -34,11 +37,23 @@ fun StudentsDetailsScreen(
 ) {
     val context = LocalContext.current
 
+    // 🔹 Recupera o ID do personal logado
+    val prefs = context.getSharedPreferences("personal_prefs", Context.MODE_PRIVATE)
+    val personalId = prefs.getString("personal_id", null)
+
+    // Estados principais
     var aluno by remember { mutableStateOf<ClientResponseDto?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    // BUSCA DADOS REAIS DO ALUNO
+    // Estados do vínculo
+    var isLinked by remember { mutableStateOf(false) }
+    var isVerifyingLink by remember { mutableStateOf(true) }
+    var showMessage by remember { mutableStateOf<String?>(null) }
+
+    val scope = rememberCoroutineScope()
+
+    // ==================== BUSCA DADOS DO ALUNO ====================
     LaunchedEffect(clientId) {
         try {
             val resp = RetrofitInstance.clientApi.getById(clientId)
@@ -54,6 +69,30 @@ fun StudentsDetailsScreen(
         }
     }
 
+    // ==================== VERIFICA SE ESTÁ VINCULADO ====================
+    LaunchedEffect(clientId, personalId) {
+        if (personalId == null) {
+            isVerifyingLink = false
+            return@LaunchedEffect
+        }
+
+        try {
+            val resp = RetrofitInstance.clientApi.verifyIfIsLinkedToPersonal(clientId, personalId)
+            if (resp.isSuccessful) {
+                isLinked = resp.body() == true
+                Log.d("StudentsDetailsScreen", "🔗 Vínculo verificado: $isLinked")
+            } else {
+                Log.e("StudentsDetailsScreen", "Erro ao verificar vínculo: ${resp.code()}")
+            }
+        } catch (e: Exception) {
+            Log.e("StudentsDetailsScreen", "Exceção ao verificar vínculo", e)
+            isLinked = false
+        } finally {
+            isVerifyingLink = false
+        }
+    }
+
+    // ==================== LAYOUT ====================
     Scaffold(
         topBar = {
             TopBar(
@@ -61,16 +100,27 @@ fun StudentsDetailsScreen(
                 showBack = true,
                 onBack = { navController.popBackStack() }
             )
+        },
+        snackbarHost = {
+            showMessage?.let { msg ->
+                Snackbar(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                ) { Text(msg) }
+            }
         }
     ) { inner ->
 
-        if (isLoading) {
+        if (isLoading || isVerifyingLink) {
             Box(
                 Modifier
                     .padding(inner)
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
+            ) {
+                CircularProgressIndicator()
+            }
             return@Scaffold
         }
 
@@ -80,7 +130,9 @@ fun StudentsDetailsScreen(
                     .padding(inner)
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
-            ) { Text(error ?: "Erro", color = Color.Red) }
+            ) {
+                Text(error ?: "Erro", color = Color.Red)
+            }
             return@Scaffold
         }
 
@@ -155,7 +207,39 @@ fun StudentsDetailsScreen(
                 ) {
                     Text("Editar Treino", color = FitBlack, fontWeight = FontWeight.SemiBold)
                 }
-            }
+
+                // 🔹 Encerrar vínculo (só aparece se estiver vinculado)
+                OutlinedButton(
+                    onClick = {
+                        scope.launch {
+                            try {
+                                val resp = RetrofitInstance.clientApi.closeLink(clientId)
+                                if (resp.isSuccessful) {
+                                    showMessage = "Vínculo encerrado com sucesso!"
+                                    isLinked = false
+                                    // ⬅️ Volta para a tela anterior
+                                    navController.popBackStack()
+                                } else {
+                                    showMessage = "Erro ao encerrar vínculo (${resp.code()})"
+                                }
+                            } catch (e: Exception) {
+                                showMessage = "Erro ao encerrar vínculo: ${e.message}"
+                            }
+                        }
+                    },
+                    shape = RoundedCornerShape(20.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red, // Fundo vermelho
+                        contentColor = Color.White   // Texto branco
+                    ),
+                    modifier = Modifier
+                        .height(40.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text("Encerrar Vínculo", fontWeight = FontWeight.SemiBold)
+                }
+                }
+
 
             Spacer(Modifier.height(28.dp))
 
@@ -163,7 +247,6 @@ fun StudentsDetailsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.Start
             ) {
-
                 SectionTitle("Sobre")
                 Text(a.aboutMe ?: "Sem descrição", style = MaterialTheme.typography.bodyMedium)
 

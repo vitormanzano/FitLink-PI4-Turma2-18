@@ -50,7 +50,7 @@ data class Trainer(
 
 class AppViewModel : ViewModel() {
 
-    var hasPersonal by mutableStateOf(true)
+    var hasPersonal by mutableStateOf(false)
         private set
 
     var clientId by mutableStateOf<String?>(null)
@@ -92,31 +92,42 @@ class AppViewModel : ViewModel() {
 
     fun loadWorkouts() {
         val id = clientId ?: return
-        if (!hasPersonal) return
 
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
+
             try {
-                // NOVA API: lista de treinos do aluno
+                // 🔹 tenta carregar os treinos
                 val trains = ApiClient.trainApi.getTrainsByClientId(id)
 
-                // 🔹 usa o MESMO agrupador do personal
+                // Se retornou lista vazia → tem personal, mas ainda sem treinos
+                hasPersonal = true
                 workoutGroups = groupTrainsForUi(trains)
 
             } catch (e: Exception) {
                 when (e) {
-                    is HttpException -> {
-                        if (e.code() == 404) {
-                            // sem treino ainda
-                            workoutGroups = emptyList()
-                            errorMessage = null
-                        } else {
-                            errorMessage = "Erro ${e.code()} ao carregar treinos."
-                            workoutGroups = emptyList()
+                    is retrofit2.HttpException -> {
+                        when (e.code()) {
+                            404 -> {
+                                // 404 = cliente não tem treino (mas não sabemos se tem personal)
+                                // vamos considerar que ele TEM personal, mas ainda sem treino
+                                hasPersonal = true
+                                workoutGroups = emptyList()
+                                errorMessage = null
+                            }
+                            400, 401 -> {
+                                // erros de autorização ou cliente inválido → sem personal
+                                hasPersonal = false
+                                workoutGroups = emptyList()
+                            }
+                            else -> {
+                                errorMessage = "Erro ${e.code()} ao carregar treinos."
+                                workoutGroups = emptyList()
+                            }
                         }
                     }
-                    is IOException -> {
+                    is java.io.IOException -> {
                         errorMessage = "Falha de conexão com o servidor."
                         workoutGroups = emptyList()
                     }
@@ -143,7 +154,6 @@ class AppViewModel : ViewModel() {
         val prefsPersonal = context.getSharedPreferences("personal_prefs", Context.MODE_PRIVATE)
         prefsPersonal.edit().clear().apply()
     }
-
 
 
 }

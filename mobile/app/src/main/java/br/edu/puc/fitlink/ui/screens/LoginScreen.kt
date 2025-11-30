@@ -313,14 +313,15 @@ fun LoginScreen(
                                         // ALUNO
                                         apiVm.login(
                                             LoginClientDto(email, senha),
-                                            appViewModel                      // 👈 passa AppViewModel pro AuthViewModel
+                                            appViewModel
                                         ) { ok, user, erro ->
                                             if (ok && user != null) {
                                                 mensagemDialog = "Bem-vindo, ${user.name}!"
                                                 mostrarDialog = true
 
-                                                // AppViewModel já teve o clientId setado dentro do AuthViewModel
-                                                // mas se quiser, mantém seu callback também:
+                                                // Atualiza o ID do cliente
+                                                appViewModel.updateClientId(user.id)
+
                                                 onLoginSuccess(user.id, false)
                                             } else {
                                                 mensagemDialog = erro ?: "Falha no login."

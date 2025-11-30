@@ -49,6 +49,7 @@ fun PersonalDetailScreen(
 
     val state = vm.uiState
 
+
     // Estados de feedback
     var isSending by remember { mutableStateOf(false) }
     var snackbarMsg by remember { mutableStateOf<String?>(null) }
