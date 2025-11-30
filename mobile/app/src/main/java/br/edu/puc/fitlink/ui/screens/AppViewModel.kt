@@ -190,6 +190,10 @@ class PersonalDetailViewModel : ViewModel() {
     var uiState by mutableStateOf(PersonalDetailUiState())
         private set
 
+    // exposto para a UI: null = verificando/unknown, true = já é aluno, false = não é aluno
+    var isLinkedToPersonal by mutableStateOf<Boolean?>(null)
+        internal set
+
     fun loadPersonal(personalId: String) {
         if (personalId.isBlank()) {
             uiState = uiState.copy(errorMessage = "ID do personal inválido.")
@@ -202,8 +206,7 @@ class PersonalDetailViewModel : ViewModel() {
             try {
                 Log.d("PersonalDetailViewModel", "Buscando personal com id: $personalId")
 
-                // Agora o método retorna Response<PersonalResponseDto>
-                val resp = ApiClient.personalApi.getById(personalId)
+                val resp = RetrofitInstance.personalApi.getById(personalId)
 
                 if (resp.isSuccessful) {
                     val body = resp.body()
@@ -221,7 +224,6 @@ class PersonalDetailViewModel : ViewModel() {
                         )
                     }
                 } else {
-                    // tenta ler mensagem do server (errorBody) se houver
                     val err = try { resp.errorBody()?.string() } catch (_: Exception) { null }
                     uiState = uiState.copy(
                         isLoading = false,
@@ -246,7 +248,105 @@ class PersonalDetailViewModel : ViewModel() {
             }
         }
     }
+
+    /**
+     * Verifica se o clientId está vinculado ao personalId.
+     *
+     * Estratégia:
+     * 1) tenta endpoint verifyIfIsLinkedToPersonal
+     * 2) se não der (400/404/exceção), faz fallback para getClientsByPersonalTrainer(personalId)
+     *    e procura clientId na lista retornada.
+     *
+     * clientIdRaw pode ser null (usuário não logado) -> nesse caso definimos false (não vinculado).
+     * personalIdRaw deve ser o id do personal (string).
+     */
+    fun checkIfLinked(clientIdRaw: String?, personalIdRaw: String) {
+        val clientId = clientIdRaw?.trim()
+        val personalId = personalIdRaw.trim()
+
+        Log.d("PersonalDetailVM", "checkIfLinked -> clientId='$clientId', personalId='$personalId'")
+
+        // enquanto verifica, coloca null (loader)
+        isLinkedToPersonal = null
+
+        viewModelScope.launch {
+            try {
+                // 1) tentativa direta
+                try {
+                    val resp = RetrofitInstance.clientApi.verifyIfIsLinkedToPersonal(clientId ?: "", personalId)
+                    val body = try { resp.body() } catch (_: Exception) { null }
+                    val err = try { resp.errorBody()?.string() } catch (_: Exception) { null }
+
+                    Log.d("PersonalDetailVM", "verifyIfIsLinkedToPersonal -> isSuccessful=${resp.isSuccessful}, code=${resp.code()}, body=$body, error=$err")
+
+                    if (resp.isSuccessful && body != null) {
+                        isLinkedToPersonal = (body == true)
+                        Log.d("PersonalDetailVM", "Resultado direto: $isLinkedToPersonal")
+                        return@launch
+                    } else {
+                        Log.w("PersonalDetailVM", "verifyIfIsLinkedToPersonal devolveu não-success -> fallback. code=${resp.code()}")
+                    }
+                } catch (e: Exception) {
+                    Log.w("PersonalDetailVM", "verifyIfIsLinkedToPersonal exceção -> fallback", e)
+                }
+
+                // 2) fallback: lista de clients do personal
+                try {
+                    Log.d("PersonalDetailVM", "Fallback: chamando getClientsByPersonalTrainer($personalId)")
+                    val respList = RetrofitInstance.clientApi.getClientsByPersonalTrainer(personalId)
+
+                    if (!respList.isSuccessful) {
+                        val err = try { respList.errorBody()?.string() } catch (_: Exception) { null }
+                        Log.e("PersonalDetailVM", "getClientsByPersonalTrainer erro http ${respList.code()} -> $err")
+                        isLinkedToPersonal = false
+                        return@launch
+                    }
+
+                    val clients = respList.body().orEmpty()
+                    Log.d("PersonalDetailVM", "getClientsByPersonalTrainer -> ${clients.size} clientes retornados")
+
+                    // compara clientId (string GUID) com os ids retornados
+                    val found = clientId?.let { cid ->
+                        clients.any { c ->
+                            // tenta comparar com diferentes nomes de propriedade (id / Id) por segurança
+                            val remoteId = when {
+                                // Kotlin generated property usually 'id' lowercase — adapte se necessário
+                                // aqui acessamos as possíveis propriedades através do reflection-safe checks:
+                                // mas para performance, assumimos 'id' está presente.
+                                else -> try {
+                                    // campo esperado: id (String)
+                                    val fieldVal = c::class.java.getDeclaredField("id")
+                                    fieldVal.isAccessible = true
+                                    (fieldVal.get(c) ?: "").toString()
+                                } catch (_: Exception) {
+                                    try {
+                                        val fieldVal = c::class.java.getDeclaredField("Id")
+                                        fieldVal.isAccessible = true
+                                        (fieldVal.get(c) ?: "").toString()
+                                    } catch (_: Exception) {
+                                        null
+                                    }
+                                }
+                            }
+                            remoteId?.equals(cid, ignoreCase = true) == true
+                        }
+                    } ?: false
+
+                    isLinkedToPersonal = found
+                    Log.d("PersonalDetailVM", "Resultado fallback (encontrado?): $found")
+                } catch (e: Exception) {
+                    Log.e("PersonalDetailVM", "Erro no fallback getClientsByPersonalTrainer", e)
+                    isLinkedToPersonal = false
+                }
+            } catch (e: Exception) {
+                Log.e("PersonalDetailVM", "Erro inesperado em checkIfLinked", e)
+                isLinkedToPersonal = false
+            }
+        }
+    }
 }
+
+
 data class ProfileUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
