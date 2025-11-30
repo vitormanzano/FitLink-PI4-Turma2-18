@@ -37,6 +37,9 @@ namespace FitLink.Services.Message
             if (personalExist is null)
                 throw new UserNotFoundException("Personal não encontrado!");
 
+            if (!string.IsNullOrWhiteSpace(client.PersonalId))
+                throw new Exception("Aluno já está vinculado a um personal trainer!");
+
             var messageModel = new MessageModel
             (
                 registerMessageDto.ClientId,
