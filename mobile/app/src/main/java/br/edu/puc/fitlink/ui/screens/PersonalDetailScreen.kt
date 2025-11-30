@@ -70,7 +70,7 @@ fun PersonalDetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = state.personal?.name ?: "Personal Trainer",
+                        text = "Personal Trainer",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.offset(x = 70.dp)
                     )
@@ -255,14 +255,43 @@ fun PersonalDetailContent(
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Text(
-                text = buildString {
-                    append("${personal.name} é um personal trainer")
-                    if (!personal.specialty.isNullOrBlank()) append(" especializado em ${personal.specialty}")
-                    if (!personal.city.isNullOrBlank()) append(", atendendo em ${personal.city}")
-                    append(". Trabalha com treinos personalizados focados nos seus objetivos.")
-                },
+                text = personal.bio ?: "Sem descrição fornecida pelo personal.",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Justify,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        // ------ ESPECIALIZAÇÃO ------
+        SectionTitle("Especialização")
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Text(
+                text = personal.specialty ?: "Não informada",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        // ------ EXPERIÊNCIA ------
+        SectionTitle("Experiência")
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Text(
+                text = personal.experience ?: "Não informada",
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(16.dp)
             )
         }

@@ -91,6 +91,7 @@ interface ClientApi {
 
 // ======== PERSONAL API ========
 interface PersonalApi {
+
     @POST("Personal/register")
     suspend fun register(@Body dto: RegisterPersonalDto): Response<ResponseBody>
 
@@ -105,7 +106,26 @@ interface PersonalApi {
     ): List<PersonalResponseDto>
 
     @GET("Personal/getById/{personalId}")
-    suspend fun getById(@Path("personalId") personalId: String): PersonalResponseDto
+    suspend fun getById(
+        @Path("personalId") personalId: String
+    ): Response<PersonalResponseDto>
+
+    @PATCH("Personal/update/{personalId}")   // <-- CORRIGIDO
+    suspend fun update(
+        @Path("personalId") id: String,
+        @Body dto: UpdatePersonalDto
+    ): Response<PersonalResponseDto>
+
+    @DELETE("Personal/delete/{id}")          // <-- CORRIGIDO
+    suspend fun delete(
+        @Path("id") id: String
+    ): Response<Unit>
+
+    @PATCH("Personal/addMoreInformations/{personalId}")
+    suspend fun addMoreInformations(
+        @Path("personalId") personalId: String,
+        @Body body: MoreInformationsPersonalDto
+    ): Response<Unit>
 }
 
 interface MessageApi {

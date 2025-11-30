@@ -10,6 +10,7 @@ import br.edu.puc.fitlink.R
 import br.edu.puc.fitlink.data.model.ClientResponseDto
 import br.edu.puc.fitlink.data.model.MetricsDto
 import br.edu.puc.fitlink.data.model.MoreInformationsDto
+import br.edu.puc.fitlink.data.model.MoreInformationsPersonalDto
 import br.edu.puc.fitlink.data.model.PersonalResponseDto
 import br.edu.puc.fitlink.data.model.RegisterExerciseDto
 import br.edu.puc.fitlink.data.model.ResponseTrainDto
@@ -22,7 +23,14 @@ import br.edu.puc.fitlink.data.model.RegisterMessageDto
 import br.edu.puc.fitlink.data.model.RegisterSetDto
 import br.edu.puc.fitlink.data.model.RegisterTrainDto
 import br.edu.puc.fitlink.data.model.ResponseMessageDto
+import br.edu.puc.fitlink.data.model.UpdatePersonalDto
 import br.edu.puc.fitlink.data.model.UpdateTrainDto
+import br.edu.puc.fitlink.data.remote.PersonalApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 
 // ----------------- MODELOS DE UI -----------------
 
@@ -194,14 +202,34 @@ class PersonalDetailViewModel : ViewModel() {
             try {
                 Log.d("PersonalDetailViewModel", "Buscando personal com id: $personalId")
 
-                // Usa o endpoint definido no PersonalApi
-                val result = ApiClient.personalApi.getById(personalId)
+                // Agora o método retorna Response<PersonalResponseDto>
+                val resp = ApiClient.personalApi.getById(personalId)
 
-                uiState = uiState.copy(
-                    isLoading = false,
-                    personal = result,
-                    errorMessage = null
-                )
+                if (resp.isSuccessful) {
+                    val body = resp.body()
+                    if (body != null) {
+                        uiState = uiState.copy(
+                            isLoading = false,
+                            personal = body,
+                            errorMessage = null
+                        )
+                    } else {
+                        uiState = uiState.copy(
+                            isLoading = false,
+                            personal = null,
+                            errorMessage = "Resposta vazia do servidor."
+                        )
+                    }
+                } else {
+                    // tenta ler mensagem do server (errorBody) se houver
+                    val err = try { resp.errorBody()?.string() } catch (_: Exception) { null }
+                    uiState = uiState.copy(
+                        isLoading = false,
+                        personal = null,
+                        errorMessage = err ?: "Erro ${resp.code()} ao carregar personal."
+                    )
+                }
+
             } catch (e: Exception) {
                 e.printStackTrace()
                 Log.e("PersonalDetailViewModel", "Erro ao buscar personal", e)
@@ -755,6 +783,107 @@ class EditStudentsWorkoutViewModel : ViewModel() {
     }
 }
 
+
+data class PersonalUiState(
+    val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
+    val personal: PersonalResponseDto? = null,
+    val errorMessage: String? = null
+)
+class PersonalViewModel : ViewModel() {
+    private val _uiState = MutableStateFlow(PersonalUiState())
+    val uiState: StateFlow<PersonalUiState> = _uiState.asStateFlow()
+
+    fun loadPersonal(personalId: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            try {
+                Log.d("PersonalVM", "loadPersonal: $personalId")
+                val resp = ApiClient.personalApi.getById(personalId)
+                if (resp.isSuccessful) {
+                    val body = resp.body()
+                    if (body != null) {
+                        _uiState.value = _uiState.value.copy(personal = body, isLoading = false)
+                    } else {
+                        _uiState.value = _uiState.value.copy(personal = null, isLoading = false, errorMessage = "Resposta vazia do servidor.")
+                    }
+                } else {
+                    val err = try { resp.errorBody()?.string() } catch (_: Exception) { null }
+                    _uiState.value = _uiState.value.copy(personal = null, isLoading = false, errorMessage = err ?: "Erro ${resp.code()} ao carregar personal.")
+                }
+            } catch (e: Exception) {
+                Log.e("PersonalVM", "Erro loadPersonal", e)
+                val msg = when (e) {
+                    is HttpException -> "Erro ${e.code()} ao carregar personal."
+                    is IOException -> "Falha de conexão com o servidor."
+                    else -> e.message ?: "Erro inesperado"
+                }
+                _uiState.value = _uiState.value.copy(personal = null, isLoading = false, errorMessage = msg)
+            }
+        }
+    }
+
+    /**
+     * Atualiza apenas os campos de MoreInformations (aboutMe, specialization, experience)
+     * usando o endpoint PATCH addMoreInformations/{personalId}
+     * onResult: (success: Boolean, message: String?)
+     */
+    fun updatePersonal(
+        personalId: String,
+        aboutMe: String?,
+        specialization: String?,
+        experience: String?,
+        callback: (Boolean, String?) -> Unit
+    ) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isSaving = true, errorMessage = null)
+
+            try {
+                val dto = MoreInformationsPersonalDto(
+                    aboutMe = aboutMe?.takeIf { it.isNotBlank() },
+                    specialization = specialization?.takeIf { it.isNotBlank() },
+                    experience = experience?.takeIf { it.isNotBlank() }
+                )
+
+                Log.d("PersonalVM", "Enviando addMoreInformations DTO: $dto")
+
+                val resp = ApiClient.personalApi.addMoreInformations(personalId, dto)
+
+                if (resp.isSuccessful) {
+                    // recarrega os dados
+                    loadPersonal(personalId)
+
+                    _uiState.value = _uiState.value.copy(isSaving = false)
+
+                    // chama callback na Main thread (segurança)
+                    withContext(Dispatchers.Main) {
+                        Log.d("PersonalVM", "updatePersonal success -> chamando callback(true)")
+                        callback(true, "Informações atualizadas com sucesso")
+                    }
+                } else {
+                    val err = try { resp.errorBody()?.string() } catch (_: Exception) { null }
+                    val msg = err ?: "Erro ${resp.code()} ao atualizar"
+                    _uiState.value = _uiState.value.copy(isSaving = false, errorMessage = msg)
+
+                    withContext(Dispatchers.Main) {
+                        Log.d("PersonalVM", "updatePersonal failed -> $msg")
+                        callback(false, msg)
+                    }
+                }
+
+            } catch (e: Exception) {
+                val msg = e.message ?: "Erro inesperado"
+                _uiState.value = _uiState.value.copy(isSaving = false, errorMessage = msg)
+
+                withContext(Dispatchers.Main) {
+                    Log.e("PersonalVM", "Exceção updatePersonal", e)
+                    callback(false, msg)
+                }
+            }
+        }
+    }
+
+}
 // ----------------- EXTENSÃO PARA CONVERTER RESPONSETRAINDTO -----------------
 
 private fun ResponseTrainDto.toWorkoutGroup(): WorkoutGroup {
