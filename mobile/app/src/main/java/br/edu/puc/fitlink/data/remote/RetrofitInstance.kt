@@ -92,6 +92,7 @@ interface ClientApi {
         @Path("clientId") clientId: String,
         @Path("personalTrainerId") personalId: String
     ): Response<Boolean>
+
 }
 
 

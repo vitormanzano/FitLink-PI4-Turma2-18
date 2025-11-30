@@ -190,6 +190,31 @@ fun PersonalDetailScreen(
                                 errorDialog = msg
                             }
                         }
+                    },
+                    onDesfazerVinculo = {
+                        val clientId = appViewModel.clientId
+                        val personalId = state.personal.id
+
+                        if (clientId.isNullOrBlank()) {
+                            errorDialog = "Você precisa estar logado para desfazer o vínculo."
+                            return@PersonalDetailContent
+                        }
+
+                        isSending = true
+                        Log.d("PersonalDetailScreen", "Desfazendo vínculo -> clientId='$clientId', personalId='$personalId'")
+
+                        messageVm.desfazerVinculo(
+                            clientId = clientId,
+                            personalId = personalId
+                        ) { ok, msg ->
+                            isSending = false
+                            if (ok) {
+                                snackbarMsg = "Vínculo desfeito com sucesso!"
+                                vm.checkIfLinked(clientId, personalId) // atualiza estado
+                            } else {
+                                errorDialog = msg
+                            }
+                        }
                     }
                 )
             }
@@ -218,7 +243,8 @@ fun PersonalDetailContent(
     innerPadding: PaddingValues,
     isSending: Boolean,
     isLinked: Boolean?,            // null = verificando, true = já é aluno, false = não é aluno
-    onTenhoInteresse: () -> Unit
+    onTenhoInteresse: () -> Unit,
+    onDesfazerVinculo: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -274,19 +300,18 @@ fun PersonalDetailContent(
             // Botão "Tenho interesse" com feedback
             when (isLinked) {
                 true -> {
-                    // já é aluno -> mostra botão desabilitado
                     Button(
-                        onClick = { /* nada */ },
-                        enabled = false,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
+                        onClick = onDesfazerVinculo,
+                        enabled = true,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                         shape = RoundedCornerShape(50),
                         modifier = Modifier
                             .fillMaxWidth(0.7f)
                             .height(48.dp)
                     ) {
                         Text(
-                            text = "Você já é aluno desse personal",
-                            color = FitBlack,
+                            text = "Desfazer Vinculo",
+                            color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -294,7 +319,7 @@ fun PersonalDetailContent(
                 null -> {
                     // verificando ainda -> mostra loader no lugar do texto (ou desabilitado)
                     Button(
-                        onClick = { /* nada enquanto verifica */ },
+                        onClick = { },
                         enabled = false,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
                         shape = RoundedCornerShape(50),

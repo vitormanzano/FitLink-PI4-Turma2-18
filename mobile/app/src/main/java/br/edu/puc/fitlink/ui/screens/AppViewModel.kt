@@ -486,6 +486,25 @@ class MessageViewModel : ViewModel() {
             }
         }
     }
+
+    fun desfazerVinculo(
+        clientId: String,
+        personalId: String,
+        callback: (Boolean, String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitInstance.clientApi.closeLink(clientId)
+                if (response.isSuccessful) {
+                    callback(true, "Vínculo desfeito com sucesso!")
+                } else {
+                    callback(false, "Erro ao desfazer vínculo: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                callback(false, "Erro de conexão: ${e.localizedMessage}")
+            }
+        }
+    }
 }
 
 data class AlunoInteressado(
