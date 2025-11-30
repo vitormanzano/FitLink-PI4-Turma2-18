@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -39,6 +41,7 @@ fun PersonalUserProfileScreen(
     personalViewModel: PersonalViewModel = viewModel()
 ) {
     val state by personalViewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(personalId) {
         personalViewModel.loadPersonal(personalId)
@@ -57,20 +60,14 @@ fun PersonalUserProfileScreen(
             )
         },
         topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-                    .background(FitYellow)
-            ) {
-                Text(
-                    "Perfil do Personal",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = FitBlack,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
+            PersonalTopBar(
+                onLogout = {
+                    appViewModel.logoutClient(context)
+                    navController.navigate("login") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                }
+            )
         }
     ) { inner ->
 
@@ -170,6 +167,8 @@ private fun PersonalProfileView(personal: PersonalResponseDto, innerPadding: Pad
     }
 }
 
+
+
 /**
  * Tela de edição — usa o PersonalViewModel.updatePersonal(...) que monta o DTO e chama a API.
  * Mostra AlertDialog com o resultado e volta só após confirmação.
@@ -208,7 +207,7 @@ fun PersonalProfileEditScreen(
     Scaffold(
         topBar = {
             Box(
-                Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp)
                     .background(FitYellow)
@@ -370,4 +369,36 @@ fun PersonalProfileEditScreen(
 @Composable
 private fun SectionTitle(text: String) {
     Text(text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(vertical = 6.dp))
+}
+
+
+@Composable
+private fun PersonalTopBar(onLogout: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .background(FitYellow)
+    ) {
+        Text(
+            "Perfil",
+            style = MaterialTheme.typography.titleLarge,
+            color = FitBlack,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.align(Alignment.Center)
+        )
+
+        IconButton(
+            onClick = onLogout,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 12.dp)
+        ) {
+            Icon(
+                Icons.AutoMirrored.Outlined.Logout,
+                contentDescription = "Logout",
+                tint = FitBlack
+            )
+        }
+    }
 }

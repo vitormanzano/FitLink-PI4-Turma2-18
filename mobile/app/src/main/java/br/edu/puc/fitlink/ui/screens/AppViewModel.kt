@@ -1,5 +1,6 @@
 package br.edu.puc.fitlink.ui.screens
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -129,6 +130,21 @@ class AppViewModel : ViewModel() {
             }
         }
     }
+
+    fun logoutClient(context: Context) {
+        clientId = null
+        hasPersonal = false
+        isProfessor = false
+
+        // limpa SharedPreferences
+        val prefs = context.getSharedPreferences("client_prefs", Context.MODE_PRIVATE)
+        prefs.edit().clear().apply()
+
+        val prefsPersonal = context.getSharedPreferences("personal_prefs", Context.MODE_PRIVATE)
+        prefsPersonal.edit().clear().apply()
+    }
+
+
 
 }
 
