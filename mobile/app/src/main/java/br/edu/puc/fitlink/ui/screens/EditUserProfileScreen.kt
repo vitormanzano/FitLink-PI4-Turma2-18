@@ -173,16 +173,6 @@ fun EditProfileScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            OutlinedTextField(
-                value = objetivoDescricao,
-                onValueChange = { objetivoDescricao = it },
-                label = { Text("Descrição do Objetivo", fontWeight = FontWeight.Bold) },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2
-            )
-
-            Spacer(Modifier.height(24.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
