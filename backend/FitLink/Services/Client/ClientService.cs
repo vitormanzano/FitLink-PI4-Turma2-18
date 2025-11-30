@@ -175,7 +175,7 @@ namespace FitLink.Services.Client
             if (client is null)
                 throw new UserNotFoundException();
 
-            if (!string.IsNullOrWhiteSpace(client.PersonalId))
+            if (string.IsNullOrWhiteSpace(client.PersonalId))
                 throw new Exception("Cliente já está vinculado a um personal trainer!");
 
             var personal = await _personalRepository.GetDocumentByIdAsync(personalTrainerId);
