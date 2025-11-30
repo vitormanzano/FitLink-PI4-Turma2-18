@@ -5,7 +5,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiClient {
 
-    // AJUSTE AQUI PARA A PORTA DO SEU BACKEND
+    // AJUSTE AQUI PARA A PORTA DO BACKEND
     // 10.0.2.2 = localhost no emulador Android
     private const val BASE_URL = "http://10.0.2.2:5229/"
 

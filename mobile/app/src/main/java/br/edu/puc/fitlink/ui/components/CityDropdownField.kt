@@ -56,8 +56,8 @@ fun CityDropdownField(
             colors = TextFieldDefaults.colors(
                 focusedIndicatorColor = Color.Black,
                 unfocusedIndicatorColor = Color.Gray,
-                focusedContainerColor = Color.White,   // fundo branco
-                unfocusedContainerColor = Color.White, // fundo branco
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
                 focusedLabelColor = Color.Black,
                 unfocusedLabelColor = Color.Gray,
                 cursorColor = Color.Black
