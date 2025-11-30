@@ -1,12 +1,14 @@
 package br.edu.puc.fitlink.data.model
 
-data class PersonalResponseDto(
-    val id: String,
-    val name: String,
-    val email: String?,
-    val phone: String?,
-    val city: String?,
-    val specialty: String?,
-    val avatarUrl: String?
-)
+import com.google.gson.annotations.SerializedName
 
+data class PersonalResponseDto(
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("email") val email: String?,
+    @SerializedName("phone") val phone: String?,
+    @SerializedName("city") val city: String?,
+    @SerializedName("aboutMe") val bio: String?,
+    @SerializedName("specialization") val specialty: String?,
+    @SerializedName("experience") val experience: String?
+)

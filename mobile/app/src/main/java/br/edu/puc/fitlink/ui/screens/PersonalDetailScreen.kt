@@ -70,7 +70,7 @@ fun PersonalDetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = state.personal?.name ?: "Personal Trainer",
+                        text = "Personal Trainer",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.offset(x = 70.dp)
                     )
