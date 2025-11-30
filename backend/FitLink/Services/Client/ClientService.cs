@@ -224,7 +224,7 @@ namespace FitLink.Services.Client
             if (client is null)
                 throw new UserNotFoundException();
 
-            var personal = await _clientRepository.GetDocumentByIdAsync(personalTrainerId);
+            var personal = await _personalRepository.GetDocumentByIdAsync(personalTrainerId);
 
             if (personal is null)
                 throw new UserNotFoundException("Personal não encontrado!");

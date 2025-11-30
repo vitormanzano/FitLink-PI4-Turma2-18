@@ -52,8 +52,10 @@ namespace FitLink.Repository.Client
 
         public async Task<ClientModel> GetClientConnectedWithPersonal(string clientId, string personalTrainerId)
         {
+            var guid = Guid.Parse(clientId);
+
             var filter = Builders<ClientModel>.Filter.And(
-                            Builders<ClientModel>.Filter.Eq(p => p.Id.ToString(), clientId),
+                            Builders<ClientModel>.Filter.Eq(p => p.Id, guid),
                             Builders<ClientModel>.Filter.Eq(p => p.PersonalId, personalTrainerId)
                         );
             return await _collection.Find(filter).FirstOrDefaultAsync();
