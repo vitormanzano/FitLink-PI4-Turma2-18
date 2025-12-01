@@ -51,6 +51,9 @@ RF007-Visualizar informações dos treinos registrados
 <br>
 RF008-Excluir conta
 
+## Figma
+https://www.figma.com/design/Efvczakc3PwfmRISysC4Dn/FitLink?node-id=0-1&t=ivXNQtj6SU9PJfx8-1
+
 Servidor Java:
 
 O servidor será desenvolvido utilizando a linguagem Java, sendo responsável por atuar como uma ferramenta central de validação de dados dentro do sistema. Ele terá como principal função garantir a integridade, consistência e segurança das informações trafegadas entre o cliente e o banco de dados.
