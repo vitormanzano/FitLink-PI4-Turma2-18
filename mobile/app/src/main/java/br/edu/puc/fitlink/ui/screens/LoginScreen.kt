@@ -1,8 +1,11 @@
 package br.edu.puc.fitlink.ui.screens
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,7 +15,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,6 +35,80 @@ import br.edu.puc.fitlink.data.model.LoginPersonalDto
 import br.edu.puc.fitlink.validations.ClienteViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+@Composable
+fun CustomDialog(
+    mensagem: String,
+    onDismiss: () -> Unit,
+    icon: ImageVector? = null,
+    iconColor: Color = Color(0xFFFFC107),
+    showLoading: Boolean = false
+) {
+    val scale by animateFloatAsState(if (showLoading) 1f else 1.05f, label = "")
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.45f))
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { onDismiss() },
+        contentAlignment = Alignment.Center
+    ) {
+
+        Card(
+            shape = RoundedCornerShape(22.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            modifier = Modifier
+                .padding(32.dp)
+                .widthIn(min = 260.dp, max = 320.dp)
+                .scale(scale)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(28.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                // ===== ÍCONE ou LOADING =====
+                when {
+                    showLoading -> {
+                        CircularProgressIndicator(
+                            color = Color(0xFFFFC107),
+                            strokeWidth = 5.dp,
+                            modifier = Modifier.size(58.dp)
+                        )
+                    }
+
+                    icon != null -> {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = iconColor,
+                            modifier = Modifier.size(70.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Text(
+                    text = mensagem,
+                    fontSize = 19.sp,
+                    lineHeight = 24.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    color = Color.Black
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+    }
+}
+
 
 @Composable
 fun LoginScreen(
@@ -234,14 +313,15 @@ fun LoginScreen(
                                         // ALUNO
                                         apiVm.login(
                                             LoginClientDto(email, senha),
-                                            appViewModel                      // 👈 passa AppViewModel pro AuthViewModel
+                                            appViewModel
                                         ) { ok, user, erro ->
                                             if (ok && user != null) {
                                                 mensagemDialog = "Bem-vindo, ${user.name}!"
                                                 mostrarDialog = true
 
-                                                // AppViewModel já teve o clientId setado dentro do AuthViewModel
-                                                // mas se quiser, mantém seu callback também:
+                                                // Atualiza o ID do cliente
+                                                appViewModel.updateClientId(user.id)
+
                                                 onLoginSuccess(user.id, false)
                                             } else {
                                                 mensagemDialog = erro ?: "Falha no login."
@@ -297,14 +377,43 @@ fun LoginScreen(
     }
 
     if (mostrarDialog) {
-        AlertDialog(
-            onDismissRequest = { mostrarDialog = false },
-            confirmButton = {
-                TextButton(onClick = { mostrarDialog = false }) {
-                    Text("OK", color = Color.Black)
-                }
+        LaunchedEffect(mensagemDialog) {
+            if (!mensagemDialog.contains("entrando", ignoreCase = true)) {
+                kotlinx.coroutines.delay(2000)
+                mostrarDialog = false
+            }
+        }
+
+        val isLoading = mensagemDialog.contains("Entrando", ignoreCase = true)
+
+        val msg = mensagemDialog.lowercase()
+
+        CustomDialog(
+            mensagem = mensagemDialog,
+            onDismiss = { mostrarDialog = false },
+            icon = when {
+                isLoading -> null
+
+                msg.contains("bem-vindo") -> Icons.Default.CheckCircle
+
+                // erro primeiro sempre
+                msg.contains("inválido") || msg.contains("falha") || msg.contains("erro") -> Icons.Default.Close
+
+                // depois sucesso
+                msg.contains("válido") -> Icons.Default.Check
+
+                else -> Icons.Default.Warning
+
             },
-            text = { Text(mensagemDialog, fontSize = 16.sp) }
+            iconColor = when {
+                msg.contains("inválido") || msg.contains("falha") || msg.contains("erro") ->
+                    Color(0xFFD32F2F)
+                else ->
+                    Color(0xFFFFC107)
+            },
+            showLoading = isLoading
         )
     }
+
+
 }

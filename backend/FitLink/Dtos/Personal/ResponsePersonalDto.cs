@@ -5,5 +5,8 @@
         string Name,
         string Email,
         string Phone,
-        string City);
+        string City,
+        string AboutMe,
+        string Specialization,
+        string Experience);
 }

@@ -105,6 +105,24 @@ namespace FitLink.Controllers
             }
         }
 
+        [HttpGet("verifyIfIsLinkedToPersonal/{clientId}/{personalTrainerId}")]
+        public async Task<IActionResult> VerifyIfIsLinkedToPersonal([FromRoute] string clientId, [FromRoute] string personalTrainerId)
+        {
+            try
+            {
+                var isLinked = await _clientService.VerifyIfIsLinkedToPersonal(clientId, personalTrainerId);
+                return Ok(isLinked);
+            }
+            catch (Exception ex)
+            {
+                return ex switch
+                {
+                    UserNotFoundException => NotFound(ex.Message),
+                    _ => BadRequest(ex.Message)
+                };
+            }
+        }
+
         [HttpPatch("update/{id}")]
         public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UpdateClientDto updateClientDto)
         {

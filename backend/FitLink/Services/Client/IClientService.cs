@@ -14,5 +14,6 @@ namespace FitLink.Services.Client
         Task LinkClientToPersonal(string clientId, string personalTrainerId);
         Task CloseLinkWithPersonal(string clientId);
         Task AddInformations(string clientId, MoreInformations moreInformations);
+        Task<bool> VerifyIfIsLinkedToPersonal(string clientId, string personalTrainerId);
     }
 }

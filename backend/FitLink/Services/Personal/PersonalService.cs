@@ -1,10 +1,11 @@
-﻿using System.Security.Authentication;
+﻿using FitLink.Dtos.Client;
 using FitLink.Dtos.Personal;
 using FitLink.Exceptions.User;
 using FitLink.Models;
 using FitLink.PasswordHasher;
 using FitLink.Repository.Personal;
 using MongoDB.Driver;
+using System.Security.Authentication;
 
 namespace FitLink.Services.Personal
 {
@@ -68,7 +69,10 @@ namespace FitLink.Services.Personal
                 personalExist.Name,
                 personalExist.Email,
                 personalExist.Phone,
-                personalExist.City);
+                personalExist.City,
+                personalExist.AboutMe,
+                personalExist.Specialization,
+                personalExist.Experience);
         }
 
         public async Task<IEnumerable<ResponsePersonalDto>> GetPersonalTrainersByCity(string city)
@@ -80,7 +84,10 @@ namespace FitLink.Services.Personal
                 personal.Name,
                 personal.Email,
                 personal.Phone,
-                personal.City
+                personal.City,
+                personal.AboutMe,
+                personal.Specialization,
+                personal.Experience
             ));
                
             return personalResponse;
@@ -98,7 +105,10 @@ namespace FitLink.Services.Personal
                 personalExist.Name, 
                 personalExist.Email, 
                 personalExist.Phone, 
-                personalExist.City);
+                personalExist.City,
+                personalExist.AboutMe,
+                personalExist.Specialization,
+                personalExist.Experience);
         }
 
         public async Task<ResponsePersonalDto> Update(string personalId, UpdatePersonalDto updatePersonalDto)
@@ -123,7 +133,10 @@ namespace FitLink.Services.Personal
                 updatePersonalDto.Name,
                 updatePersonalDto.Email,
                 updatePersonalDto.Phone,
-                updatePersonalDto.City
+                updatePersonalDto.City,
+                personal.AboutMe,
+                personal.Specialization,
+                personal.Experience
             );
 
             return personalResponse;
@@ -137,6 +150,21 @@ namespace FitLink.Services.Personal
                 throw new UserNotFoundException();
 
             await _personalRepository.DeleteDocumentAsync(p => p.Id.ToString() == personalId);
+        }
+
+        public async Task AddMoreInformations(string personalId, MoreInformationsPersonalDto moreInformationsPersonalDto)
+        {
+            var personal = await _personalRepository.GetDocumentByIdAsync(personalId);
+
+            if (personal is null)
+                throw new UserNotFoundException();
+
+            await _personalRepository.UpdateDocumentAsync(
+                u => u.Id.ToString() == (personalId),
+                Builders<PersonalTrainerModel>.Update
+                    .Set(u => u.AboutMe, moreInformationsPersonalDto.AboutMe)
+                    .Set(u => u.Specialization, moreInformationsPersonalDto.Specialization)
+                    .Set(u => u.Experience, moreInformationsPersonalDto.Experience));
         }
     }
 }

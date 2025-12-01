@@ -1,5 +1,6 @@
 package br.edu.puc.fitlink.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,22 +24,31 @@ import br.edu.puc.fitlink.R
 import br.edu.puc.fitlink.data.model.PersonalResponseDto
 import br.edu.puc.fitlink.ui.theme.FitBlack
 import br.edu.puc.fitlink.ui.theme.FitYellow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
+import retrofit2.HttpException
+import java.io.IOException
 
-// ---------------------------- Personal Detail Screen ----------------------------
+// ---------------------------- Personal Detail Screen (arrumada) ----------------------------
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonalDetailScreen(
     personalId: String,
     onBack: () -> Unit,
-    appViewModel: AppViewModel,                     // <- recebe AppViewModel de fora
+    appViewModel: AppViewModel,
     vm: PersonalDetailViewModel = viewModel(),
-    messageVm: MessageViewModel = viewModel()       // <- para enviar a mensagem
+    messageVm: MessageViewModel = viewModel()
 ) {
+    // 1) carrega dados do personal usando o id da rota (fallback)
     LaunchedEffect(personalId) {
+        Log.d("PersonalDetailScreen", "Chamando vm.loadPersonal(personalId='$personalId')")
         vm.loadPersonal(personalId)
     }
 
     val state = vm.uiState
+
 
     // Estados de feedback
     var isSending by remember { mutableStateOf(false) }
@@ -55,6 +65,34 @@ fun PersonalDetailScreen(
         }
     }
 
+    /**
+     * Observa mudanças no clientId E no objeto personal carregado.
+     * - Se state.personal?.id estiver disponível, usa ele;
+     * - Caso contrário, usa o personalId da rota como fallback.
+     *
+     * Só chama vm.checkIfLinked quando clientId NÃO for nulo/vazio e idToUse estiver disponível.
+     */
+    LaunchedEffect(Unit) {
+        snapshotFlow {
+            // pair (clientId, realIdFromStateOrNull)
+            val c = appViewModel.clientId
+            val real = vm.uiState.personal?.id
+            Pair(c, real)
+        }
+            .distinctUntilChanged()
+            .collect { (clientId, realPersonalId) ->
+                val idToUse = realPersonalId ?: personalId
+                Log.d("PersonalDetailScreen", "Observando mudanças -> clientId='$clientId', realPersonalId='$realPersonalId', fallback='$personalId', using='$idToUse'")
+
+                // chama a verificação apenas se tivermos um id para usar (sempre teremos usando fallback)
+                // e se clientId estiver presente (se não estiver, chamamos com null para que o VM trate)
+                vm.checkIfLinked(clientId, idToUse)
+            }
+    }
+
+    // usa o estado exposto pelo ViewModel (null | true | false)
+    val isLinked = vm.isLinkedToPersonal
+
     Scaffold(
         snackbarHost = {
             SnackbarHost(snackbarHostState) { snackbarData ->
@@ -70,7 +108,7 @@ fun PersonalDetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = state.personal?.name ?: "Personal Trainer",
+                        text = "Personal Trainer",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.offset(x = 70.dp)
                     )
@@ -112,10 +150,16 @@ fun PersonalDetailScreen(
             }
 
             state.personal != null -> {
+                // log do objeto personal para debugging (pode remover depois)
+                LaunchedEffect(state.personal) {
+                    Log.d("PersonalDetailScreen", "Objeto personal carregado: ${state.personal}")
+                }
+
                 PersonalDetailContent(
                     personal = state.personal,
                     innerPadding = innerPadding,
                     isSending = isSending,
+                    isLinked = isLinked, // usa estado do ViewModel
                     onTenhoInteresse = {
                         val clientId = appViewModel.clientId
 
@@ -124,15 +168,50 @@ fun PersonalDetailScreen(
                             return@PersonalDetailContent
                         }
 
+                        // se já for aluno, não permite enviar solicitação
+                        if (isLinked == true) {
+                            snackbarMsg = "Você já é aluno desse personal."
+                            return@PersonalDetailContent
+                        }
+
                         isSending = true
 
+                        // usa o ID do objeto retornado pelo backend (state.personal.id)
+                        val idToSend = state.personal.id
+                        Log.d("PersonalDetailScreen", "Enviando solicitação -> clientId='$clientId', personalId='$idToSend'")
+
                         messageVm.enviarSolicitacao(
+                            clientId = clientId,
+                            personalId = idToSend
+                        ) { ok, msg ->
+                            isSending = false
+                            if (ok) {
+                                snackbarMsg = msg
+                            } else {
+                                errorDialog = msg
+                            }
+                        }
+                    },
+                    onDesfazerVinculo = {
+                        val clientId = appViewModel.clientId
+                        val personalId = state.personal.id
+
+                        if (clientId.isNullOrBlank()) {
+                            errorDialog = "Você precisa estar logado para desfazer o vínculo."
+                            return@PersonalDetailContent
+                        }
+
+                        isSending = true
+                        Log.d("PersonalDetailScreen", "Desfazendo vínculo -> clientId='$clientId', personalId='$personalId'")
+
+                        messageVm.desfazerVinculo(
                             clientId = clientId,
                             personalId = personalId
                         ) { ok, msg ->
                             isSending = false
                             if (ok) {
-                                snackbarMsg = msg
+                                snackbarMsg = "Vínculo desfeito com sucesso!"
+                                vm.checkIfLinked(clientId, personalId) // atualiza estado
                             } else {
                                 errorDialog = msg
                             }
@@ -157,13 +236,16 @@ fun PersonalDetailScreen(
     }
 }
 
+
 // ---------------------------- Personal Detail Content ----------------------------
 @Composable
 fun PersonalDetailContent(
     personal: PersonalResponseDto,
     innerPadding: PaddingValues,
     isSending: Boolean,
-    onTenhoInteresse: () -> Unit
+    isLinked: Boolean?,            // null = verificando, true = já é aluno, false = não é aluno
+    onTenhoInteresse: () -> Unit,
+    onDesfazerVinculo: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -217,29 +299,69 @@ fun PersonalDetailContent(
             Spacer(Modifier.height(16.dp))
 
             // Botão "Tenho interesse" com feedback
-            Button(
-                onClick = onTenhoInteresse,
-                enabled = !isSending,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSending) Color.LightGray else FitYellow
-                ),
-                shape = RoundedCornerShape(50),
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .height(48.dp)
-            ) {
-                if (isSending) {
-                    CircularProgressIndicator(
-                        color = FitBlack,
-                        strokeWidth = 2.dp,
-                        modifier = Modifier.size(22.dp)
-                    )
-                } else {
-                    Text(
-                        text = "Tenho interesse",
-                        color = FitBlack,
-                        fontWeight = FontWeight.Bold
-                    )
+            when (isLinked) {
+                true -> {
+                    Button(
+                        onClick = onDesfazerVinculo,
+                        enabled = true,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                        shape = RoundedCornerShape(50),
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(48.dp)
+                    ) {
+                        Text(
+                            text = "Desfazer Vinculo",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                null -> {
+                    // verificando ainda -> mostra loader no lugar do texto (ou desabilitado)
+                    Button(
+                        onClick = { },
+                        enabled = false,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
+                        shape = RoundedCornerShape(50),
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(48.dp)
+                    ) {
+                        CircularProgressIndicator(
+                            color = FitBlack,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+                false -> {
+                    // não é aluno -> botão normal
+                    Button(
+                        onClick = onTenhoInteresse,
+                        enabled = !isSending,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isSending) Color.LightGray else FitYellow
+                        ),
+                        shape = RoundedCornerShape(50),
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(48.dp)
+                    ) {
+                        if (isSending) {
+                            CircularProgressIndicator(
+                                color = FitBlack,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        } else {
+                            Text(
+                                text = "Tenho interesse",
+                                color = FitBlack,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
             }
 
@@ -255,14 +377,43 @@ fun PersonalDetailContent(
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Text(
-                text = buildString {
-                    append("${personal.name} é um personal trainer")
-                    if (!personal.specialty.isNullOrBlank()) append(" especializado em ${personal.specialty}")
-                    if (!personal.city.isNullOrBlank()) append(", atendendo em ${personal.city}")
-                    append(". Trabalha com treinos personalizados focados nos seus objetivos.")
-                },
+                text = personal.bio ?: "Sem descrição fornecida pelo personal.",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Justify,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        // ------ ESPECIALIZAÇÃO ------
+        SectionTitle("Especialização")
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Text(
+                text = personal.specialty ?: "Não informada",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        // ------ EXPERIÊNCIA ------
+        SectionTitle("Experiência")
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Text(
+                text = personal.experience ?: "Não informada",
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(16.dp)
             )
         }

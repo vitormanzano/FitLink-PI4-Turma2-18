@@ -180,6 +180,9 @@ namespace FitLink.Services.Client
             if (personal is null)
                 throw new UserNotFoundException("Personal não encontrado!");
 
+            if (!string.IsNullOrWhiteSpace(client.PersonalId))
+                throw new Exception("Aluno já está vinculado a um personal trainer!");
+
             await _clientRepository.UpdateDocumentAsync(
                 u => u.Id.ToString() == (clientId),
                 Builders<ClientModel>.Update.Set(u => u.PersonalId, personalTrainerId));
@@ -210,6 +213,25 @@ namespace FitLink.Services.Client
                     .Set(u => u.AboutMe, moreInformations.AboutMe)
                     .Set(u => u.Goals, moreInformations.Goals)
                     .Set(u => u.Metrics, moreInformations.Metrics));
+        }
+
+        public async Task<bool> VerifyIfIsLinkedToPersonal(string clientId, string personalTrainerId)
+        {
+            var client = await _clientRepository.GetDocumentByIdAsync(clientId);
+
+            if (client is null)
+                throw new UserNotFoundException();
+
+            var personal = await _personalRepository.GetDocumentByIdAsync(personalTrainerId);
+
+            if (personal is null)
+                throw new UserNotFoundException("Personal não encontrado!");
+
+            var clientWithPersonal = await _clientRepository.GetClientConnectedWithPersonal(clientId, personalTrainerId);
+
+            if (clientWithPersonal == null)
+                return false;
+            return true;
         }
     }
 }

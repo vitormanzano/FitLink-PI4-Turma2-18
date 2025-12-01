@@ -1,5 +1,6 @@
 package br.edu.puc.fitlink.ui.screens
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,6 +11,7 @@ import br.edu.puc.fitlink.R
 import br.edu.puc.fitlink.data.model.ClientResponseDto
 import br.edu.puc.fitlink.data.model.MetricsDto
 import br.edu.puc.fitlink.data.model.MoreInformationsDto
+import br.edu.puc.fitlink.data.model.MoreInformationsPersonalDto
 import br.edu.puc.fitlink.data.model.PersonalResponseDto
 import br.edu.puc.fitlink.data.model.RegisterExerciseDto
 import br.edu.puc.fitlink.data.model.ResponseTrainDto
@@ -22,7 +24,14 @@ import br.edu.puc.fitlink.data.model.RegisterMessageDto
 import br.edu.puc.fitlink.data.model.RegisterSetDto
 import br.edu.puc.fitlink.data.model.RegisterTrainDto
 import br.edu.puc.fitlink.data.model.ResponseMessageDto
+import br.edu.puc.fitlink.data.model.UpdatePersonalDto
 import br.edu.puc.fitlink.data.model.UpdateTrainDto
+import br.edu.puc.fitlink.data.remote.PersonalApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 
 // ----------------- MODELOS DE UI -----------------
 
@@ -41,7 +50,7 @@ data class Trainer(
 
 class AppViewModel : ViewModel() {
 
-    var hasPersonal by mutableStateOf(true)
+    var hasPersonal by mutableStateOf(false)
         private set
 
     var clientId by mutableStateOf<String?>(null)
@@ -83,31 +92,42 @@ class AppViewModel : ViewModel() {
 
     fun loadWorkouts() {
         val id = clientId ?: return
-        if (!hasPersonal) return
 
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
+
             try {
-                // NOVA API: lista de treinos do aluno
+                // 🔹 tenta carregar os treinos
                 val trains = ApiClient.trainApi.getTrainsByClientId(id)
 
-                // 🔹 usa o MESMO agrupador do personal
+                // Se retornou lista vazia → tem personal, mas ainda sem treinos
+                hasPersonal = true
                 workoutGroups = groupTrainsForUi(trains)
 
             } catch (e: Exception) {
                 when (e) {
-                    is HttpException -> {
-                        if (e.code() == 404) {
-                            // sem treino ainda
-                            workoutGroups = emptyList()
-                            errorMessage = null
-                        } else {
-                            errorMessage = "Erro ${e.code()} ao carregar treinos."
-                            workoutGroups = emptyList()
+                    is retrofit2.HttpException -> {
+                        when (e.code()) {
+                            404 -> {
+                                // 404 = cliente não tem treino (mas não sabemos se tem personal)
+                                // vamos considerar que ele TEM personal, mas ainda sem treino
+                                hasPersonal = true
+                                workoutGroups = emptyList()
+                                errorMessage = null
+                            }
+                            400, 401 -> {
+                                // erros de autorização ou cliente inválido → sem personal
+                                hasPersonal = false
+                                workoutGroups = emptyList()
+                            }
+                            else -> {
+                                errorMessage = "Erro ${e.code()} ao carregar treinos."
+                                workoutGroups = emptyList()
+                            }
                         }
                     }
-                    is IOException -> {
+                    is java.io.IOException -> {
                         errorMessage = "Falha de conexão com o servidor."
                         workoutGroups = emptyList()
                     }
@@ -121,6 +141,20 @@ class AppViewModel : ViewModel() {
             }
         }
     }
+
+    fun logoutClient(context: Context) {
+        clientId = null
+        hasPersonal = false
+        isProfessor = false
+
+        // limpa SharedPreferences
+        val prefs = context.getSharedPreferences("client_prefs", Context.MODE_PRIVATE)
+        prefs.edit().clear().apply()
+
+        val prefsPersonal = context.getSharedPreferences("personal_prefs", Context.MODE_PRIVATE)
+        prefsPersonal.edit().clear().apply()
+    }
+
 
 }
 
@@ -182,6 +216,10 @@ class PersonalDetailViewModel : ViewModel() {
     var uiState by mutableStateOf(PersonalDetailUiState())
         private set
 
+    // exposto para a UI: null = verificando/unknown, true = já é aluno, false = não é aluno
+    var isLinkedToPersonal by mutableStateOf<Boolean?>(null)
+        internal set
+
     fun loadPersonal(personalId: String) {
         if (personalId.isBlank()) {
             uiState = uiState.copy(errorMessage = "ID do personal inválido.")
@@ -194,14 +232,32 @@ class PersonalDetailViewModel : ViewModel() {
             try {
                 Log.d("PersonalDetailViewModel", "Buscando personal com id: $personalId")
 
-                // Usa o endpoint definido no PersonalApi
-                val result = ApiClient.personalApi.getById(personalId)
+                val resp = RetrofitInstance.personalApi.getById(personalId)
 
-                uiState = uiState.copy(
-                    isLoading = false,
-                    personal = result,
-                    errorMessage = null
-                )
+                if (resp.isSuccessful) {
+                    val body = resp.body()
+                    if (body != null) {
+                        uiState = uiState.copy(
+                            isLoading = false,
+                            personal = body,
+                            errorMessage = null
+                        )
+                    } else {
+                        uiState = uiState.copy(
+                            isLoading = false,
+                            personal = null,
+                            errorMessage = "Resposta vazia do servidor."
+                        )
+                    }
+                } else {
+                    val err = try { resp.errorBody()?.string() } catch (_: Exception) { null }
+                    uiState = uiState.copy(
+                        isLoading = false,
+                        personal = null,
+                        errorMessage = err ?: "Erro ${resp.code()} ao carregar personal."
+                    )
+                }
+
             } catch (e: Exception) {
                 e.printStackTrace()
                 Log.e("PersonalDetailViewModel", "Erro ao buscar personal", e)
@@ -218,7 +274,105 @@ class PersonalDetailViewModel : ViewModel() {
             }
         }
     }
+
+    /**
+     * Verifica se o clientId está vinculado ao personalId.
+     *
+     * Estratégia:
+     * 1) tenta endpoint verifyIfIsLinkedToPersonal
+     * 2) se não der (400/404/exceção), faz fallback para getClientsByPersonalTrainer(personalId)
+     *    e procura clientId na lista retornada.
+     *
+     * clientIdRaw pode ser null (usuário não logado) -> nesse caso definimos false (não vinculado).
+     * personalIdRaw deve ser o id do personal (string).
+     */
+    fun checkIfLinked(clientIdRaw: String?, personalIdRaw: String) {
+        val clientId = clientIdRaw?.trim()
+        val personalId = personalIdRaw.trim()
+
+        Log.d("PersonalDetailVM", "checkIfLinked -> clientId='$clientId', personalId='$personalId'")
+
+        // enquanto verifica, coloca null (loader)
+        isLinkedToPersonal = null
+
+        viewModelScope.launch {
+            try {
+                // 1) tentativa direta
+                try {
+                    val resp = RetrofitInstance.clientApi.verifyIfIsLinkedToPersonal(clientId ?: "", personalId)
+                    val body = try { resp.body() } catch (_: Exception) { null }
+                    val err = try { resp.errorBody()?.string() } catch (_: Exception) { null }
+
+                    Log.d("PersonalDetailVM", "verifyIfIsLinkedToPersonal -> isSuccessful=${resp.isSuccessful}, code=${resp.code()}, body=$body, error=$err")
+
+                    if (resp.isSuccessful && body != null) {
+                        isLinkedToPersonal = (body == true)
+                        Log.d("PersonalDetailVM", "Resultado direto: $isLinkedToPersonal")
+                        return@launch
+                    } else {
+                        Log.w("PersonalDetailVM", "verifyIfIsLinkedToPersonal devolveu não-success -> fallback. code=${resp.code()}")
+                    }
+                } catch (e: Exception) {
+                    Log.w("PersonalDetailVM", "verifyIfIsLinkedToPersonal exceção -> fallback", e)
+                }
+
+                // 2) fallback: lista de clients do personal
+                try {
+                    Log.d("PersonalDetailVM", "Fallback: chamando getClientsByPersonalTrainer($personalId)")
+                    val respList = RetrofitInstance.clientApi.getClientsByPersonalTrainer(personalId)
+
+                    if (!respList.isSuccessful) {
+                        val err = try { respList.errorBody()?.string() } catch (_: Exception) { null }
+                        Log.e("PersonalDetailVM", "getClientsByPersonalTrainer erro http ${respList.code()} -> $err")
+                        isLinkedToPersonal = false
+                        return@launch
+                    }
+
+                    val clients = respList.body().orEmpty()
+                    Log.d("PersonalDetailVM", "getClientsByPersonalTrainer -> ${clients.size} clientes retornados")
+
+                    // compara clientId (string GUID) com os ids retornados
+                    val found = clientId?.let { cid ->
+                        clients.any { c ->
+                            // tenta comparar com diferentes nomes de propriedade (id / Id) por segurança
+                            val remoteId = when {
+                                // Kotlin generated property usually 'id' lowercase — adapte se necessário
+                                // aqui acessamos as possíveis propriedades através do reflection-safe checks:
+                                // mas para performance, assumimos 'id' está presente.
+                                else -> try {
+                                    // campo esperado: id (String)
+                                    val fieldVal = c::class.java.getDeclaredField("id")
+                                    fieldVal.isAccessible = true
+                                    (fieldVal.get(c) ?: "").toString()
+                                } catch (_: Exception) {
+                                    try {
+                                        val fieldVal = c::class.java.getDeclaredField("Id")
+                                        fieldVal.isAccessible = true
+                                        (fieldVal.get(c) ?: "").toString()
+                                    } catch (_: Exception) {
+                                        null
+                                    }
+                                }
+                            }
+                            remoteId?.equals(cid, ignoreCase = true) == true
+                        }
+                    } ?: false
+
+                    isLinkedToPersonal = found
+                    Log.d("PersonalDetailVM", "Resultado fallback (encontrado?): $found")
+                } catch (e: Exception) {
+                    Log.e("PersonalDetailVM", "Erro no fallback getClientsByPersonalTrainer", e)
+                    isLinkedToPersonal = false
+                }
+            } catch (e: Exception) {
+                Log.e("PersonalDetailVM", "Erro inesperado em checkIfLinked", e)
+                isLinkedToPersonal = false
+            }
+        }
+    }
 }
+
+
 data class ProfileUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -339,6 +493,25 @@ class MessageViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 onResult(false, e.message ?: "Erro de rede ao enviar solicitação")
+            }
+        }
+    }
+
+    fun desfazerVinculo(
+        clientId: String,
+        personalId: String,
+        callback: (Boolean, String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitInstance.clientApi.closeLink(clientId)
+                if (response.isSuccessful) {
+                    callback(true, "Vínculo desfeito com sucesso!")
+                } else {
+                    callback(false, "Erro ao desfazer vínculo: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                callback(false, "Erro de conexão: ${e.localizedMessage}")
             }
         }
     }
@@ -755,6 +928,107 @@ class EditStudentsWorkoutViewModel : ViewModel() {
     }
 }
 
+
+data class PersonalUiState(
+    val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
+    val personal: PersonalResponseDto? = null,
+    val errorMessage: String? = null
+)
+class PersonalViewModel : ViewModel() {
+    private val _uiState = MutableStateFlow(PersonalUiState())
+    val uiState: StateFlow<PersonalUiState> = _uiState.asStateFlow()
+
+    fun loadPersonal(personalId: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            try {
+                Log.d("PersonalVM", "loadPersonal: $personalId")
+                val resp = ApiClient.personalApi.getById(personalId)
+                if (resp.isSuccessful) {
+                    val body = resp.body()
+                    if (body != null) {
+                        _uiState.value = _uiState.value.copy(personal = body, isLoading = false)
+                    } else {
+                        _uiState.value = _uiState.value.copy(personal = null, isLoading = false, errorMessage = "Resposta vazia do servidor.")
+                    }
+                } else {
+                    val err = try { resp.errorBody()?.string() } catch (_: Exception) { null }
+                    _uiState.value = _uiState.value.copy(personal = null, isLoading = false, errorMessage = err ?: "Erro ${resp.code()} ao carregar personal.")
+                }
+            } catch (e: Exception) {
+                Log.e("PersonalVM", "Erro loadPersonal", e)
+                val msg = when (e) {
+                    is HttpException -> "Erro ${e.code()} ao carregar personal."
+                    is IOException -> "Falha de conexão com o servidor."
+                    else -> e.message ?: "Erro inesperado"
+                }
+                _uiState.value = _uiState.value.copy(personal = null, isLoading = false, errorMessage = msg)
+            }
+        }
+    }
+
+    /**
+     * Atualiza apenas os campos de MoreInformations (aboutMe, specialization, experience)
+     * usando o endpoint PATCH addMoreInformations/{personalId}
+     * onResult: (success: Boolean, message: String?)
+     */
+    fun updatePersonal(
+        personalId: String,
+        aboutMe: String?,
+        specialization: String?,
+        experience: String?,
+        callback: (Boolean, String?) -> Unit
+    ) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isSaving = true, errorMessage = null)
+
+            try {
+                val dto = MoreInformationsPersonalDto(
+                    aboutMe = aboutMe?.takeIf { it.isNotBlank() },
+                    specialization = specialization?.takeIf { it.isNotBlank() },
+                    experience = experience?.takeIf { it.isNotBlank() }
+                )
+
+                Log.d("PersonalVM", "Enviando addMoreInformations DTO: $dto")
+
+                val resp = ApiClient.personalApi.addMoreInformations(personalId, dto)
+
+                if (resp.isSuccessful) {
+                    // recarrega os dados
+                    loadPersonal(personalId)
+
+                    _uiState.value = _uiState.value.copy(isSaving = false)
+
+                    // chama callback na Main thread (segurança)
+                    withContext(Dispatchers.Main) {
+                        Log.d("PersonalVM", "updatePersonal success -> chamando callback(true)")
+                        callback(true, "Informações atualizadas com sucesso")
+                    }
+                } else {
+                    val err = try { resp.errorBody()?.string() } catch (_: Exception) { null }
+                    val msg = err ?: "Erro ${resp.code()} ao atualizar"
+                    _uiState.value = _uiState.value.copy(isSaving = false, errorMessage = msg)
+
+                    withContext(Dispatchers.Main) {
+                        Log.d("PersonalVM", "updatePersonal failed -> $msg")
+                        callback(false, msg)
+                    }
+                }
+
+            } catch (e: Exception) {
+                val msg = e.message ?: "Erro inesperado"
+                _uiState.value = _uiState.value.copy(isSaving = false, errorMessage = msg)
+
+                withContext(Dispatchers.Main) {
+                    Log.e("PersonalVM", "Exceção updatePersonal", e)
+                    callback(false, msg)
+                }
+            }
+        }
+    }
+
+}
 // ----------------- EXTENSÃO PARA CONVERTER RESPONSETRAINDTO -----------------
 
 private fun ResponseTrainDto.toWorkoutGroup(): WorkoutGroup {
