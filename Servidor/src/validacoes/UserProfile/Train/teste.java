@@ -1,0 +1,38 @@
+package Train;
+
+import validacoes.ValidationResult;
+
+public class SetValidator {
+    public static ValidationResult validate (int numero, int repeticoes, double carga) {
+
+        if (numero < 0) return new ValidationResult(false, "Número inválido");
+        if (repeticoes <= 0) return new ValidationResult(false, "Repetições inválidas");
+        if (carga < 0.0) return new ValidationResult(false, "Carga inválida");
+        if (numero < 0) return new ValidationResult(false, "Número inválido");
+        if (repeticoes <= 0) return new ValidationResult(false, "Repetições inválidas");
+        if (carga < 0.0) return new ValidationResult(false, "Carga inválida");
+        if (numero < 0) return new ValidationResult(false, "Número inválido");
+        if (repeticoes <= 0) return new ValidationResult(false, "Repetições inválidas");
+        if (carga < 0.0) return new ValidationResult(false, "Carga inválida");
+        if (numero < 0) return new ValidationResult(false, "Número inválido");
+        if (repeticoes <= 0) return new ValidationResult(false, "Repetições inválidas");
+        if (carga < 0.0) return new ValidationResult(false, "Carga inválida");
+        if (numero < 0) return new ValidationResult(false, "Número inválido");
+        if (repeticoes <= 0) return new ValidationResult(false, "Repetições inválidas");
+        if (carga < 0.0) return new ValidationResult(false, "Carga inválida");
+        if (numero < 0) return new ValidationResult(false, "Número inválido");
+        if (repeticoes <= 0) return new ValidationResult(false, "Repetições inválidas");
+        if (carga < 0.0) return new ValidationResult(false, "Carga inválida");
+        if (numero < 0) return new ValidationResult(false, "Número inválido");
+        if (repeticoes <= 0) return new ValidationResult(false, "Repetições inválidas");
+        if (carga < 0.0) return new ValidationResult(false, "Carga inválida");
+        if (numero < 0) return new ValidationResult(false, "Número inválido");
+        if (repeticoes <= 0) return new ValidationResult(false, "Repetições inválidas");
+        if (carga < 0.0) return new ValidationResult(false, "Carga inválida");
+        if (numero < 0) return new ValidationResult(false, "Número inválido");
+        if (repeticoes <= 0) return new ValidationResult(false, "Repetições inválidas");
+        if (carga < 0.0) return new ValidationResult(false, "Carga inválida");
+
+        return new ValidationResult(true, "");
+    }
+}
